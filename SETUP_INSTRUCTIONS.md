@@ -1,21 +1,21 @@
-# 🌿 Plant Disease Detection - Setup & Run Instructions
+# Plant Disease Detection - Setup & Run Instructions
 
 **Simple guide for running this plant disease detection system**
 
 ---
 
-## 📋 What This Does
+## What This Does
 
 This system trains AI models to identify plant diseases from leaf images. It:
 - Downloads a plant disease dataset
 - Trains multiple machine learning models
 - Creates predictions models you can use
 
-**⚠️ Warning:** This is resource-intensive and may take 2-8 hours on a good computer.
+**Warning:** This is resource-intensive and may take 2-8 hours on a good computer.
 
 ---
 
-## 🖥️ System Requirements
+## System Requirements
 
 **Minimum:**
 - **RAM:** 8GB (16GB+ recommended)
@@ -28,7 +28,7 @@ This system trains AI models to identify plant diseases from leaf images. It:
 
 ---
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### Step 1: Check Python Installation
 
@@ -108,7 +108,7 @@ chmod 600 ~/.kaggle/kaggle.json
 
 ---
 
-## ▶️ Running The System
+## Running The System
 
 ### Option 1: Run Everything (Simplest)
 
@@ -155,7 +155,7 @@ python main.py --step eval
 python main.py --step deploy
 ```
 
-**💡 Tip:** If Step 5 (deep learning) crashes, skip it. Classical ML models from Step 4 work fine!
+**Tip:** If Step 5 (deep learning) crashes, skip it. Classical ML models from Step 4 work fine!
 
 ---
 
@@ -175,7 +175,7 @@ You'll get working models without the heavy deep learning training.
 
 ---
 
-## 🛠️ If Computer Crashes / Out of Memory
+## If Computer Crashes / Out of Memory
 
 ### Reduce Memory Usage
 
@@ -213,7 +213,7 @@ Close other programs before running.
 
 ---
 
-## 📂 What Gets Created
+## What Gets Created
 
 After running, you'll see:
 
@@ -243,7 +243,7 @@ plant_disease_detection/
 
 ---
 
-## ✅ How to Know It Worked
+## How to Know It Worked
 
 Look for these signs of success:
 
@@ -257,7 +257,7 @@ Look for these signs of success:
 
 ---
 
-## 🧪 Testing A Model
+## Testing A Model
 
 Once trained, test a model on a single image:
 
@@ -279,7 +279,7 @@ python inference_demo.py \
 
 ---
 
-## 🐛 Common Problems & Solutions
+## Common Problems & Solutions
 
 ### Problem: "ModuleNotFoundError"
 
@@ -336,7 +336,7 @@ Or just train classical ML models (they don't use GPU).
 
 ---
 
-## 📊 Understanding Results
+## Understanding Results
 
 After completion, check these files:
 
@@ -353,7 +353,7 @@ After completion, check these files:
 
 ---
 
-## 💾 Backing Up Results
+## Backing Up Results
 
 After successful run, backup these important folders:
 
@@ -366,7 +366,7 @@ tar -czf plant_disease_results.tar.gz models/ results/ visualizations/
 
 ---
 
-## 🔄 Starting Fresh
+## Starting Fresh
 
 If something goes wrong and you want to restart:
 
@@ -380,7 +380,7 @@ python main.py --step all
 
 ---
 
-## 📞 Getting Help
+## Getting Help
 
 If stuck:
 
@@ -392,7 +392,7 @@ If stuck:
 
 ---
 
-## 📝 Quick Command Reference
+## Quick Command Reference
 
 ```bash
 # Full run (all steps)
@@ -413,7 +413,7 @@ python inference_demo.py --image leaf.jpg --model-path models/classical_ml/rando
 
 ---
 
-## ⏱️ Expected Timeline
+## Expected Timeline
 
 | Task | Time | Memory Usage |
 |------|------|--------------|
@@ -428,7 +428,7 @@ python inference_demo.py --image leaf.jpg --model-path models/classical_ml/rando
 
 ---
 
-## 🎯 Recommended Approach
+## Recommended Approach
 
 **For regular computers (8-16GB RAM):**
 ```bash
@@ -454,6 +454,6 @@ python main.py --step all
 
 ---
 
-**Good luck! 🚀 The models will be ready to identify plant diseases once training completes.**
+**Good luck! The models will be ready to identify plant diseases once training completes.**
 
 

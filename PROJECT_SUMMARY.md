@@ -1,10 +1,10 @@
 # Plant Disease Detection System - Project Summary
 
-## 🎯 Project Overview
+## Project Overview
 
 A **comprehensive, production-ready, end-to-end plant disease detection system** implementing both classical machine learning and deep learning approaches. Built following best practices in ML engineering, ethical AI, and agricultural technology deployment.
 
-## 📊 System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -57,23 +57,23 @@ A **comprehensive, production-ready, end-to-end plant disease detection system**
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 📁 Complete Project Structure
+## Complete Project Structure
 
 ```
 plant_disease_detection/
 │
-├── 📄 README.md                    # Main documentation
-├── 📄 QUICKSTART.md                # Quick start guide
-├── 📄 PROJECT_SUMMARY.md           # This file
-├── 📄 requirements.txt             # Python dependencies
-├── 📄 config.yaml                  # System configuration
-├── 📄 LICENSE                      # MIT License
+├── README.md                    # Main documentation
+├── QUICKSTART.md                # Quick start guide
+├── PROJECT_SUMMARY.md           # This file
+├── requirements.txt             # Python dependencies
+├── config.yaml                  # System configuration
+├── LICENSE                      # MIT License
 │
-├── 🐍 main.py                      # Main pipeline orchestrator
-├── 🐍 inference_demo.py            # Prediction demo script
-├── 🔧 quick_start.sh              # Setup automation script
+├── main.py                      # Main pipeline orchestrator
+├── inference_demo.py            # Prediction demo script
+├── quick_start.sh              # Setup automation script
 │
-├── 📁 src/                         # Source code modules
+├── src/                         # Source code modules
 │   ├── __init__.py
 │   ├── data_loader.py             # Dataset downloading & organization
 │   ├── preprocessing.py           # Image preprocessing pipeline
@@ -84,12 +84,12 @@ plant_disease_detection/
 │   ├── evaluator.py               # Comprehensive evaluation
 │   └── deployment.py              # Model conversion & inference
 │
-├── 📁 docs/                        # Documentation
+├── docs/                        # Documentation
 │   ├── USER_GUIDE.md              # Detailed user guide
 │   ├── ETHICS.md                  # Ethical guidelines
 │   └── API_REFERENCE.md           # API documentation
 │
-├── 📁 data/                        # Data directory (auto-created)
+├── data/                        # Data directory (auto-created)
 │   ├── raw/                       # Raw PlantVillage data
 │   └── processed/                 # Preprocessed & splits
 │       ├── X_train.npy
@@ -104,7 +104,7 @@ plant_disease_detection/
 │       ├── split_info.json
 │       └── class_mapping.json
 │
-├── 📁 models/                      # Trained models (auto-created)
+├── models/                      # Trained models (auto-created)
 │   ├── classical_ml/
 │   │   ├── random_forest.pkl
 │   │   ├── svm.pkl
@@ -123,33 +123,33 @@ plant_disease_detection/
 │       ├── mobilenet_v2.onnx
 │       └── README.md
 │
-├── 📁 results/                     # Evaluation results (auto-created)
+├── results/                     # Evaluation results (auto-created)
 │   ├── model_comparison.csv
 │   ├── classical_random_forest_evaluation.json
 │   ├── dl_mobilenet_v2_evaluation.json
 │   └── *_per_class_metrics.csv
 │
-├── 📁 visualizations/             # Generated plots (auto-created)
+├── visualizations/             # Generated plots (auto-created)
 │   ├── classical_random_forest_confusion_matrix.png
 │   ├── dl_mobilenet_v2_confusion_matrix.png
 │   ├── dl_mobilenet_v2_roc_curves.png
 │   ├── dl_mobilenet_v2_training_curves.png
 │   └── model_comparison.png
 │
-└── 📁 logs/                        # Training logs (auto-created)
+└── logs/                        # Training logs (auto-created)
     └── *.csv
 ```
 
-## 🎨 Key Features Implemented
+## Key Features Implemented
 
-### ✅ Data Management
+### Data Management
 - [x] Automated Kaggle dataset download
 - [x] Stratified train/val/test splitting
 - [x] Class mapping and label management
 - [x] Data provenance tracking
 - [x] Support for custom datasets
 
-### ✅ Preprocessing
+### Preprocessing
 - [x] Image resizing (224x224)
 - [x] Normalization (ImageNet statistics)
 - [x] Color standardization (CLAHE)
@@ -157,14 +157,14 @@ plant_disease_detection/
 - [x] Optional leaf segmentation
 - [x] Batch preprocessing with progress bars
 
-### ✅ Data Augmentation
+### Data Augmentation
 - [x] Geometric: rotation, flip, shift, zoom
 - [x] Color: brightness, contrast, hue, saturation
 - [x] Quality: blur, noise, distortion
 - [x] Advanced: Mixup, CutMix, CoarseDropout
 - [x] Albumentations integration
 
-### ✅ Feature Extraction
+### Feature Extraction
 - [x] **Manual Features:**
   - Color: histograms, moments
   - Texture: Haralick, LBP, Gabor
@@ -173,7 +173,7 @@ plant_disease_detection/
   - Pre-trained model extraction
   - MobileNetV2, ResNet50, EfficientNetB0
 
-### ✅ Classical ML Training
+### Classical ML Training
 - [x] Random Forest (200 estimators)
 - [x] SVM (RBF kernel)
 - [x] Gradient Boosting
@@ -182,7 +182,7 @@ plant_disease_detection/
 - [x] Hyperparameter tuning (GridSearchCV)
 - [x] Model persistence (joblib)
 
-### ✅ Deep Learning Training
+### Deep Learning Training
 - [x] Transfer learning with ImageNet weights
 - [x] Two-phase training (frozen → fine-tuning)
 - [x] Multiple architectures:
@@ -196,7 +196,7 @@ plant_disease_detection/
   - CSVLogger
 - [x] Training visualization
 
-### ✅ Comprehensive Evaluation
+### Comprehensive Evaluation
 - [x] Multiple metrics:
   - Accuracy, Precision, Recall, F1-score
   - Macro and weighted averages
@@ -206,7 +206,7 @@ plant_disease_detection/
 - [x] Model comparison charts
 - [x] Cross-validation results
 
-### ✅ Deployment
+### Deployment
 - [x] TensorFlow Lite conversion
 - [x] ONNX export
 - [x] Quantization (FP16)
@@ -215,7 +215,7 @@ plant_disease_detection/
 - [x] Batch prediction support
 - [x] Deployment package creation
 
-### ✅ Documentation
+### Documentation
 - [x] Comprehensive README
 - [x] Quick start guide
 - [x] Detailed user guide
@@ -223,7 +223,7 @@ plant_disease_detection/
 - [x] API reference
 - [x] Code comments and docstrings
 
-### ✅ Ethical Considerations
+### Ethical Considerations
 - [x] Data privacy guidelines
 - [x] Informed consent templates
 - [x] Bias mitigation strategies
@@ -233,7 +233,7 @@ plant_disease_detection/
 - [x] Accessibility design
 - [x] Multilingual support planning
 
-## 🔧 Technologies Used
+## Technologies Used
 
 ### Core ML/DL
 - **TensorFlow 2.13+**: Deep learning framework
@@ -267,7 +267,7 @@ plant_disease_detection/
 - **kagglehub**: Dataset downloading
 - **PyYAML**: Configuration management
 
-## 📈 Expected Performance
+## Expected Performance
 
 ### Deep Learning Models
 
@@ -285,7 +285,7 @@ plant_disease_detection/
 | SVM | ~82% | 100MB | 5ms | Small datasets |
 | Gradient Boosting | ~83% | 30MB | 15ms | Interpretable |
 
-## 🚀 Usage Examples
+## Usage Examples
 
 ### Complete Pipeline
 ```bash
@@ -322,7 +322,7 @@ print(f"Disease: {result['top_prediction']['class']}")
 print(f"Confidence: {result['top_prediction']['confidence_percentage']:.1f}%")
 ```
 
-## 🎓 Design Philosophy
+## Design Philosophy
 
 ### 1. Modularity
 - Each component is self-contained
@@ -351,7 +351,7 @@ print(f"Confidence: {result['top_prediction']['confidence_percentage']:.1f}%")
 - Accessibility focus
 - Community collaboration
 
-## 📊 Project Statistics
+## Project Statistics
 
 - **Total Lines of Code**: ~4,000+
 - **Number of Modules**: 8 core modules
@@ -362,37 +362,37 @@ print(f"Confidence: {result['top_prediction']['confidence_percentage']:.1f}%")
 - **Training Time**: 4-8 hours (full pipeline)
 - **Deployment Size**: 4-14MB (optimized)
 
-## 🌟 Highlights
+## Highlights
 
 ### Technical Excellence
-✅ End-to-end automation  
-✅ Multiple model paradigms  
-✅ Comprehensive evaluation  
-✅ Production deployment  
-✅ Mobile optimization  
+- End-to-end automation  
+- Multiple model paradigms  
+- Comprehensive evaluation  
+- Production deployment  
+- Mobile optimization  
 
 ### Best Practices
-✅ Clean, documented code  
-✅ Modular architecture  
-✅ Configuration management  
-✅ Version control ready  
-✅ Testing friendly  
+- Clean, documented code  
+- Modular architecture  
+- Configuration management  
+- Version control ready  
+- Testing friendly  
 
 ### User Focus
-✅ Detailed documentation  
-✅ Quick start guides  
-✅ Error messages  
-✅ Progress indication  
-✅ Example scripts  
+- Detailed documentation  
+- Quick start guides  
+- Error messages  
+- Progress indication  
+- Example scripts  
 
 ### Ethical AI
-✅ Privacy guidelines  
-✅ Bias mitigation  
-✅ Transparency  
-✅ Accessibility  
-✅ Community focus  
+- Privacy guidelines  
+- Bias mitigation  
+- Transparency  
+- Accessibility  
+- Community focus  
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - [ ] Explainable AI (Grad-CAM visualizations)
 - [ ] Real-time video processing
@@ -404,20 +404,20 @@ print(f"Confidence: {result['top_prediction']['confidence_percentage']:.1f}%")
 - [ ] Active learning pipeline
 - [ ] Model monitoring dashboard
 
-## 📞 Support & Contact
+## Support & Contact
 
 For questions, issues, or contributions:
-- 📧 Email: support@example.com
-- 💬 GitHub Issues
-- 📚 Documentation: `/docs`
+- Email: support@example.com
+- GitHub Issues
+- Documentation: `/docs`
 
-## 📄 License
+## License
 
 MIT License - See LICENSE file
 
 ---
 
-**Built with ❤️ for the agricultural community**
+**Built for the agricultural community**
 
 *A comprehensive, ethical, production-ready plant disease detection system.*
 

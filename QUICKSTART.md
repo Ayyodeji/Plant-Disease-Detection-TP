@@ -1,4 +1,4 @@
-# 🚀 Quick Start Guide
+# Quick Start Guide
 
 Get the Plant Disease Detection system up and running in minutes!
 
@@ -82,11 +82,11 @@ python main.py --step all
 ```
 
 This includes:
-1. ✅ Download full dataset (~1.5GB)
-2. ✅ Preprocess 50,000+ images
-3. ✅ Train 6 models (3 classical + 3 deep learning)
-4. ✅ Comprehensive evaluation
-5. ✅ Export deployment-ready models
+1. Download full dataset (~1.5GB)
+2. Preprocess 50,000+ images
+3. Train 6 models (3 classical + 3 deep learning)
+4. Comprehensive evaluation
+5. Export deployment-ready models
 
 ### Option C: Step-by-Step
 
@@ -244,24 +244,24 @@ Subsequent runs are faster as data is cached!
 
 You'll know it's working when you see:
 
-1. ✅ `data/processed/X_train.npy` exists
-2. ✅ `models/deep_learning/mobilenet_v2_final.h5` created
-3. ✅ `results/model_comparison.csv` shows >95% accuracy
-4. ✅ `visualizations/` contains plots
+1. `data/processed/X_train.npy` exists
+2. `models/deep_learning/mobilenet_v2_final.h5` created
+3. `results/model_comparison.csv` shows >95% accuracy
+4. `visualizations/` contains plots
 
 ## Next Steps
 
 Congratulations! Your system is ready. Now:
 
-1. 📝 Review model performance in `results/`
-2. 🎨 Check visualizations
-3. 🧪 Test on your own images
-4. 📱 Deploy to mobile devices
-5. 🌍 Share with agricultural communities
+1. Review model performance in `results/`
+2. Check visualizations
+3. Test on your own images
+4. Deploy to mobile devices
+5. Share with agricultural communities
 
 ---
 
-**Happy plant disease detecting! 🌱**
+**Happy plant disease detecting!**
 
 
 

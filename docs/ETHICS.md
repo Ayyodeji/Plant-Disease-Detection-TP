@@ -53,14 +53,14 @@ This system is developed with the following ethical principles:
 When collecting field images:
 
 ```
-✅ DO:
+DO:
 - Explain how data will be used
 - Get written or recorded consent
 - Allow participants to withdraw consent
 - Provide compensation when appropriate
 - Explain data retention policies
 
-❌ DON'T:
+DON'T:
 - Collect data without permission
 - Use data beyond stated purpose
 - Share identifiable information
@@ -104,13 +104,13 @@ location = anonymize_location(exact_lat, exact_lon, precision=0.5)
 #### Personal Information
 
 ```
-✅ DO:
+DO:
 - Remove EXIF data from images
 - Anonymize any text in images
 - Use participant IDs instead of names
 - Encrypt sensitive data at rest
 
-❌ DON'T:
+DON'T:
 - Store farmer names with images
 - Include faces in disease photos
 - Record personal conversations
@@ -147,7 +147,7 @@ When collecting your own data:
 #### Avoiding Bias
 
 ```
-✅ Balanced Dataset:
+Balanced Dataset:
 - Equal samples per disease class
 - Multiple crop varieties
 - Different growth stages
@@ -155,7 +155,7 @@ When collecting your own data:
 - Multiple geographic regions
 - Different seasons
 
-❌ Biased Dataset:
+Biased Dataset:
 - Only one crop variety
 - Only laboratory images
 - Only one season
@@ -212,7 +212,7 @@ final_score = model.evaluate(X_test, y_test)
 #### Honest Reporting
 
 ```
-✅ DO Report:
+DO Report:
 - All tested models (not just best)
 - Validation methodology
 - Failure cases
@@ -220,7 +220,7 @@ final_score = model.evaluate(X_test, y_test)
 - Dataset limitations
 - Performance on subgroups
 
-❌ DON'T:
+DON'T:
 - Cherry-pick best results
 - Test on training data
 - Hide failure modes
@@ -288,16 +288,16 @@ fraction_of_positives, mean_predicted_value = calibration_curve(
 #### Clear Communication
 
 ```
-✅ Good UI:
+Good UI:
 "This system detected: Late Blight (87% confidence)
 
-⚠️ Important:
+Important:
 - This is a preliminary assessment
 - Consult agricultural expert for confirmation
 - Consider multiple factors (weather, history, etc.)
 - Follow local guidelines for treatment"
 
-❌ Bad UI:
+Bad UI:
 "Result: Late Blight"
 [No context, no caveats, appears definitive]
 ```
@@ -324,7 +324,7 @@ def format_prediction_with_uncertainty(result):
 #### Design for All Users
 
 ```
-✅ Accessible Design:
+Accessible Design:
 - Works offline (no internet required)
 - Low data requirements (<10MB model)
 - Multilingual support
@@ -332,7 +332,7 @@ def format_prediction_with_uncertainty(result):
 - Voice output for literacy issues
 - Works on low-end devices
 
-❌ Inaccessible:
+Inaccessible:
 - Requires constant internet
 - Heavy app (>100MB)
 - English only
@@ -402,10 +402,10 @@ def get_treatment_recommendation(disease, location):
 # Include environmental warnings
 if treatment.requires_chemical:
     warnings.append(
-        "⚠️ Follow safety guidelines\n"
-        "⚠️ Protect beneficial insects\n"
-        "⚠️ Respect water sources\n"
-        "⚠️ Use protective equipment"
+        "WARNING: Follow safety guidelines\n"
+        "WARNING: Protect beneficial insects\n"
+        "WARNING: Respect water sources\n"
+        "WARNING: Use protective equipment"
     )
 ```
 
@@ -414,7 +414,7 @@ if treatment.requires_chemical:
 ### Developer Responsibilities
 
 ```
-✅ Developers Must:
+Developers Must:
 - Test thoroughly before deployment
 - Document limitations clearly
 - Provide regular updates
@@ -424,7 +424,7 @@ if treatment.requires_chemical:
 - Protect user privacy
 - Ensure accessibility
 
-❌ Developers Must Not:
+Developers Must Not:
 - Release untested systems
 - Exaggerate capabilities
 - Ignore error reports
@@ -436,7 +436,7 @@ if treatment.requires_chemical:
 ### User Responsibilities
 
 ```
-✅ Users Should:
+Users Should:
 - Understand system limitations
 - Verify important decisions
 - Consult experts when uncertain
@@ -444,7 +444,7 @@ if treatment.requires_chemical:
 - Follow treatment guidelines
 - Consider environmental impact
 
-❌ Users Should Not:
+Users Should Not:
 - Rely solely on app
 - Ignore professional advice
 - Share private data carelessly
@@ -454,7 +454,7 @@ if treatment.requires_chemical:
 ### Extension Officer Responsibilities
 
 ```
-✅ Extension Officers Should:
+Extension Officers Should:
 - Validate system recommendations
 - Train farmers in proper use
 - Collect feedback systematically
@@ -462,7 +462,7 @@ if treatment.requires_chemical:
 - Adapt advice to local context
 - Bridge technology gaps
 
-❌ Extension Officers Should Not:
+Extension Officers Should Not:
 - Blindly trust predictions
 - Replace field visits entirely
 - Ignore traditional knowledge
@@ -479,29 +479,29 @@ This plant disease detection system is a DECISION SUPPORT TOOL
 and should not replace professional agricultural advice.
 
 Limitations:
-• Accuracy is not 100%
-• Trained primarily on PlantVillage dataset
-• May not recognize all disease variants
-• Performance varies with image quality
-• Requires validation by experts
+- Accuracy is not 100%
+- Trained primarily on PlantVillage dataset
+- May not recognize all disease variants
+- Performance varies with image quality
+- Requires validation by experts
 
 Usage:
-• Use as preliminary screening tool
-• Always verify with agricultural professional
-• Consider multiple diagnostic factors
-• Follow local agricultural guidelines
+- Use as preliminary screening tool
+- Always verify with agricultural professional
+- Consider multiple diagnostic factors
+- Follow local agricultural guidelines
 
 Liability:
-• Developers not responsible for crop losses
-• Users assume all risks
-• No warranty of fitness for purpose
-• Continuous improvement ongoing
+- Developers not responsible for crop losses
+- Users assume all risks
+- No warranty of fitness for purpose
+- Continuous improvement ongoing
 
 Contact professional agronomist for:
-• Definitive diagnosis
-• Treatment recommendations
-• Regulatory compliance
-• Economic thresholds
+- Definitive diagnosis
+- Treatment recommendations
+- Regulatory compliance
+- Economic thresholds
 ```
 
 ### Implementation Example
@@ -510,7 +510,7 @@ Contact professional agronomist for:
 def show_disclaimer_first_use():
     """Display disclaimer on first app launch."""
     disclaimer = """
-    ⚠️ IMPORTANT NOTICE
+    IMPORTANT NOTICE
     
     This tool provides preliminary disease detection only.
     

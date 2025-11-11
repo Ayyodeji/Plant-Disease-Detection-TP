@@ -99,11 +99,11 @@ python main.py --config config.yaml --step all
 ```
 
 This will:
-1. ✅ Download PlantVillage dataset (~1.5GB)
-2. ✅ Preprocess 50,000+ images
-3. ✅ Train 6 different models
-4. ✅ Evaluate and compare models
-5. ✅ Create deployment-ready versions
+1. Download PlantVillage dataset (~1.5GB)
+2. Preprocess 50,000+ images
+3. Train 6 different models
+4. Evaluate and compare models
+5. Create deployment-ready versions
 
 **What to Expect**:
 - Progress bars show current step
@@ -465,7 +465,7 @@ If you encounter issues:
 
 ---
 
-**Happy disease detection! 🌱**
+**Happy disease detecting!**
 
 
 

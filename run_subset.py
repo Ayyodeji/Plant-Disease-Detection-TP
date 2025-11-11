@@ -45,7 +45,7 @@ if not has_images:
     print("Downloading dataset from Kaggle...")
     try:
         downloaded_path = loader.download_dataset()
-        print(f"✓ Downloaded to: {downloaded_path}")
+        print(f"Downloaded to: {downloaded_path}")
         dataset_path = Path(downloaded_path)
     except Exception as e:
         print(f"\nERROR: Failed to download dataset: {e}")
@@ -55,7 +55,7 @@ if not has_images:
         print("\nGet kaggle.json from: https://www.kaggle.com/account")
         sys.exit(1)
 else:
-    print("✓ Dataset already downloaded")
+    print("Dataset already downloaded")
     # Find where the images are in raw_dir
     dataset_path = None
     for root, dirs, files in os.walk(raw_dir):
@@ -139,8 +139,8 @@ class_to_idx = {name: idx for idx, name in enumerate(sorted(dataset_dict.keys())
 with open(processed_dir / 'class_mapping.json', 'w') as f:
     json.dump(class_to_idx, f, indent=2)
 
-print(f"✓ Splits saved to {processed_dir}/split_info.json")
-print(f"✓ Class mapping saved to {processed_dir}/class_mapping.json")
+print(f"Splits saved to {processed_dir}/split_info.json")
+print(f"Class mapping saved to {processed_dir}/class_mapping.json")
 
 # Step 4: Preprocess
 print("\nSTEP 4: Preprocessing images...")
@@ -181,7 +181,7 @@ np.save(processed_dir / 'y_val.npy', y_val)
 np.save(processed_dir / 'X_test.npy', X_test)
 np.save(processed_dir / 'y_test.npy', y_test)
 
-print(f"\n✓ Saved preprocessed data:")
+print(f"\nSaved preprocessed data:")
 print(f"  Train: {X_train.shape}")
 print(f"  Val:   {X_val.shape}")
 print(f"  Test:  {X_test.shape}")
@@ -206,7 +206,7 @@ np.save(processed_dir / 'features_train.npy', features_train)
 np.save(processed_dir / 'features_val.npy', features_val)
 np.save(processed_dir / 'features_test.npy', features_test)
 
-print(f"✓ Saved features: {features_train.shape[1]} dimensions")
+print(f"Saved features: {features_train.shape[1]} dimensions")
 
 # Step 6: Train classical ML
 print("\nSTEP 6: Training classical ML models...")
@@ -225,7 +225,7 @@ results = trainer.train_all_models(
     use_cross_validation=True
 )
 
-print("\n✓ Training complete!")
+print("\nTraining complete!")
 
 # Step 7: Evaluate
 print("\nSTEP 7: Evaluating models...")

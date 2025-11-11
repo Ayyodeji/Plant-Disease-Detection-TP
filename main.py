@@ -72,7 +72,7 @@ class PlantDiseaseDetectionPipeline:
         # Create and save class mapping
         self.class_mapping = self.data_loader.get_class_mapping(dataset_dict)
         
-        print("\n✓ Data preparation complete")
+        print("\nData preparation complete")
         return train_dict, val_dict, test_dict
     
     def step2_preprocess_images(self, train_dict, val_dict, test_dict):
@@ -120,7 +120,7 @@ class PlantDiseaseDetectionPipeline:
         np.save(processed_dir / 'X_test.npy', X_test)
         np.save(processed_dir / 'y_test.npy', y_test)
         
-        print(f"\n✓ Preprocessing complete")
+        print(f"\nPreprocessing complete")
         print(f"  Training: {X_train.shape}")
         print(f"  Validation: {X_val.shape}")
         print(f"  Test: {X_test.shape}")
@@ -156,7 +156,7 @@ class PlantDiseaseDetectionPipeline:
         np.save(processed_dir / 'features_val.npy', features_val)
         np.save(processed_dir / 'features_test.npy', features_test)
         
-        print(f"\n✓ Feature extraction complete")
+        print(f"\nFeature extraction complete")
         print(f"  Feature dimension: {features_train.shape[1]}")
         
         return features_train, features_val, features_test
@@ -183,7 +183,7 @@ class PlantDiseaseDetectionPipeline:
             use_cross_validation=True
         )
         
-        print("\n✓ Classical ML training complete")
+        print("\nClassical ML training complete")
         return trainer, results
     
     def step5_train_deep_learning(self, X_train, y_train, X_val, y_val, num_classes):
@@ -199,7 +199,7 @@ class PlantDiseaseDetectionPipeline:
             X_train, y_train, X_val, y_val, num_classes
         )
         
-        print("\n✓ Deep learning training complete")
+        print("\nDeep learning training complete")
         return trainer, results
     
     def step6_evaluate_models(
@@ -254,7 +254,7 @@ class PlantDiseaseDetectionPipeline:
         # Compare all models
         self.evaluator.compare_models(all_results)
         
-        print("\n✓ Model evaluation complete")
+        print("\nModel evaluation complete")
         return all_results
     
     def step7_convert_for_deployment(self, dl_trainer):
@@ -279,7 +279,7 @@ class PlantDiseaseDetectionPipeline:
                 if model_path.exists():
                     converter.convert_to_onnx(str(model_path), model_name)
         
-        print("\n✓ Deployment conversion complete")
+        print("\nDeployment conversion complete")
     
     def run_full_pipeline(self, skip_deep_learning=True):
         """Run the complete pipeline."""

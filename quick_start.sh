@@ -21,9 +21,9 @@ NC='\033[0m' # No Color
 echo "Checking Python installation..."
 if command -v python3 &> /dev/null; then
     PYTHON_VERSION=$(python3 --version)
-    echo -e "${GREEN}✓${NC} Found: $PYTHON_VERSION"
+    echo -e "${GREEN}Found: $PYTHON_VERSION${NC}"
 else
-    echo -e "${RED}✗${NC} Python 3 not found. Please install Python 3.8 or higher."
+    echo -e "${RED}Python 3 not found. Please install Python 3.8 or higher.${NC}"
     exit 1
 fi
 
@@ -32,14 +32,14 @@ if [ ! -d "venv" ]; then
     echo ""
     echo "${YELLOW}Creating virtual environment...${NC}"
     python3 -m venv venv
-    echo -e "${GREEN}✓${NC} Virtual environment created"
+    echo -e "${GREEN}Virtual environment created${NC}"
 fi
 
 # Activate virtual environment
 echo ""
 echo "Activating virtual environment..."
 source venv/bin/activate
-echo -e "${GREEN}✓${NC} Virtual environment activated"
+echo -e "${GREEN}Virtual environment activated${NC}"
 
 # Install dependencies
 echo ""
@@ -47,15 +47,15 @@ echo "${YELLOW}Installing dependencies...${NC}"
 echo "This may take 5-10 minutes..."
 pip install --upgrade pip > /dev/null 2>&1
 pip install -r requirements.txt > /dev/null 2>&1
-echo -e "${GREEN}✓${NC} Dependencies installed"
+echo -e "${GREEN}Dependencies installed${NC}"
 
 # Check for Kaggle credentials
 echo ""
 echo "Checking Kaggle API credentials..."
 if [ -f "$HOME/.kaggle/kaggle.json" ]; then
-    echo -e "${GREEN}✓${NC} Kaggle credentials found"
+    echo -e "${GREEN}Kaggle credentials found${NC}"
 else
-    echo -e "${YELLOW}⚠${NC} Kaggle credentials not found"
+    echo -e "${YELLOW}Kaggle credentials not found${NC}"
     echo ""
     echo "To download the dataset, you need Kaggle API credentials:"
     echo "1. Go to https://www.kaggle.com/account"
@@ -71,7 +71,7 @@ else
         read KAGGLE_PATH
         cp "$KAGGLE_PATH" ~/.kaggle/kaggle.json
         chmod 600 ~/.kaggle/kaggle.json
-        echo -e "${GREEN}✓${NC} Kaggle credentials configured"
+        echo -e "${GREEN}Kaggle credentials configured${NC}"
     else
         echo ""
         echo "You can set up Kaggle credentials later and run:"
@@ -86,7 +86,7 @@ echo "Creating project directories..."
 mkdir -p data/raw data/processed
 mkdir -p models/classical_ml models/deep_learning models/deployment
 mkdir -p results visualizations logs docs
-echo -e "${GREEN}✓${NC} Directories created"
+echo -e "${GREEN}Directories created${NC}"
 
 echo ""
 echo "=================================="

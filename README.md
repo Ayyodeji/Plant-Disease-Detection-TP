@@ -1,4 +1,4 @@
-# 🌿 Plant Disease Detection System
+# Plant Disease Detection System
 
 A comprehensive, production-ready end-to-end system for detecting plant diseases using classical machine learning and deep learning approaches. Built with simplicity, portability, and local relevance in mind.
 
@@ -6,7 +6,7 @@ A comprehensive, production-ready end-to-end system for detecting plant diseases
 [![TensorFlow 2.13+](https://img.shields.io/badge/tensorflow-2.13+-orange.svg)](https://www.tensorflow.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -21,7 +21,7 @@ A comprehensive, production-ready end-to-end system for detecting plant diseases
 - [Contributing](#contributing)
 - [License](#license)
 
-## 🎯 Overview
+## Overview
 
 This system implements a complete pipeline for plant disease detection, from data acquisition to model deployment. It uses the PlantVillage dataset and implements both classical machine learning (Random Forest, SVM, Gradient Boosting) and deep learning approaches (MobileNet, ResNet, EfficientNet).
 
@@ -34,40 +34,40 @@ This system implements a complete pipeline for plant disease detection, from dat
 - **Production-Ready**: TFLite and ONNX export for edge device deployment
 - **Offline Capable**: Designed for use in low-connectivity environments
 
-## ✨ Features
+## Features
 
 ### Data Processing
-- ✅ Automated dataset download from Kaggle
-- ✅ Stratified train/validation/test splits
-- ✅ Image preprocessing (resize, normalize, color standardization)
-- ✅ Advanced data augmentation (rotation, flip, color jitter, noise, blur, etc.)
-- ✅ Optional leaf segmentation for field images
+- Automated dataset download from Kaggle
+- Stratified train/validation/test splits
+- Image preprocessing (resize, normalize, color standardization)
+- Advanced data augmentation (rotation, flip, color jitter, noise, blur, etc.)
+- Optional leaf segmentation for field images
 
 ### Feature Extraction
-- ✅ **Manual Features**: Color histograms, color moments, Haralick texture, LBP, Gabor filters, shape features
-- ✅ **Deep Features**: Pre-trained CNN feature extraction
-- ✅ Feature scaling and normalization
+- **Manual Features**: Color histograms, color moments, Haralick texture, LBP, Gabor filters, shape features
+- **Deep Features**: Pre-trained CNN feature extraction
+- Feature scaling and normalization
 
 ### Models
-- ✅ **Classical ML**: Random Forest, SVM, Gradient Boosting
-- ✅ **Deep Learning**: MobileNetV2, ResNet50, EfficientNetB0
-- ✅ Transfer learning with fine-tuning
-- ✅ Hyperparameter optimization
+- **Classical ML**: Random Forest, SVM, Gradient Boosting
+- **Deep Learning**: MobileNetV2, ResNet50, EfficientNetB0
+- Transfer learning with fine-tuning
+- Hyperparameter optimization
 
 ### Evaluation
-- ✅ Comprehensive metrics (accuracy, precision, recall, F1)
-- ✅ Per-class performance analysis
-- ✅ Confusion matrices and ROC curves
-- ✅ Model comparison visualizations
-- ✅ Cross-validation
+- Comprehensive metrics (accuracy, precision, recall, F1)
+- Per-class performance analysis
+- Confusion matrices and ROC curves
+- Model comparison visualizations
+- Cross-validation
 
 ### Deployment
-- ✅ TensorFlow Lite conversion with quantization
-- ✅ ONNX export
-- ✅ Inference pipeline for production use
-- ✅ Mobile-optimized models (<50MB)
+- TensorFlow Lite conversion with quantization
+- ONNX export
+- Inference pipeline for production use
+- Mobile-optimized models (<50MB)
 
-## 🎨 System Design Philosophy
+## System Design Philosophy
 
 This system follows three core principles:
 
@@ -75,7 +75,7 @@ This system follows three core principles:
 2. **Portability**: Lightweight models suitable for edge devices and mobile phones
 3. **Local Relevance**: Designed for use by farmers and agricultural workers in resource-constrained environments
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 
@@ -127,7 +127,7 @@ To get your `kaggle.json`:
 2. Scroll to "API" section
 3. Click "Create New API Token"
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Option 1: Run Complete Pipeline
 
@@ -185,7 +185,7 @@ python inference_demo.py \
     --top-k 3
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 plant_disease_detection/
@@ -229,7 +229,7 @@ plant_disease_detection/
     └── API_REFERENCE.md
 ```
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Configuration
 
@@ -318,7 +318,7 @@ print(f"Disease: {result['top_prediction']['class']}")
 print(f"Confidence: {result['top_prediction']['confidence_percentage']:.2f}%")
 ```
 
-## 📊 Model Performance
+## Model Performance
 
 Expected performance on PlantVillage dataset:
 
@@ -335,7 +335,7 @@ Expected performance on PlantVillage dataset:
 
 *Note: Performance may vary based on dataset and training conditions*
 
-## 📱 Deployment
+## Deployment
 
 ### Mobile Deployment (TensorFlow Lite)
 
@@ -381,31 +381,31 @@ result = pipeline.predict('image.jpg')
 python inference_demo.py --image image.jpg --model-path model.h5
 ```
 
-## 🤝 Ethical Considerations
+## Ethical Considerations
 
 This system is designed with the following ethical principles:
 
 ### Data Ethics
-- ✅ Respects PlantVillage dataset licensing
-- ✅ Provides guidelines for obtaining informed consent for field data
-- ✅ Anonymizes location and personal information
-- ✅ Ensures fair representation across crops and regions
+- Respects PlantVillage dataset licensing
+- Provides guidelines for obtaining informed consent for field data
+- Anonymizes location and personal information
+- Ensures fair representation across crops and regions
 
 ### Model Ethics
-- ✅ Transparent limitations and disclaimers
-- ✅ Avoids overfitting through regularization and validation
-- ✅ Reports honest performance metrics
-- ✅ Tests on diverse data when available
+- Transparent limitations and disclaimers
+- Avoids overfitting through regularization and validation
+- Reports honest performance metrics
+- Tests on diverse data when available
 
 ### Deployment Ethics
-- ✅ Offline-capable for low-connectivity areas
-- ✅ Lightweight models for resource-constrained devices
-- ✅ Multilingual support (extensible)
-- ✅ Collaborates with local agricultural experts
+- Offline-capable for low-connectivity areas
+- Lightweight models for resource-constrained devices
+- Multilingual support (extensible)
+- Collaborates with local agricultural experts
 
 **See [ETHICS.md](docs/ETHICS.md) for complete ethical guidelines.**
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -429,13 +429,13 @@ Solution: Use smaller model (MobileNetV2) or reduce image size
 Solution: Ensure all dependencies installed: pip install -r requirements.txt
 ```
 
-## 📚 Documentation
+## Documentation
 
 - **[User Guide](docs/USER_GUIDE.md)**: Detailed usage instructions
 - **[Ethics Documentation](docs/ETHICS.md)**: Ethical considerations and guidelines
 - **[API Reference](docs/API_REFERENCE.md)**: Complete API documentation
 
-## 🔬 Research & References
+## Research & References
 
 This system implements techniques from:
 
@@ -444,26 +444,26 @@ This system implements techniques from:
 - Data Augmentation: Shorten & Khoshgoftaar (2019)
 - Mobile Models: Howard et al. (2017) - MobileNets
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - PlantVillage for the comprehensive plant disease dataset
 - TensorFlow and scikit-learn communities
 - Agricultural extension officers who provided valuable feedback
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see LICENSE file for details.
 
 **Dataset License**: PlantVillage dataset is licensed under CC BY 4.0
 
-## 📞 Contact & Support
+## Contact & Support
 
 For questions, issues, or contributions:
 - Open an issue on GitHub
 - Email: [your-email]
 - Documentation: [docs/](docs/)
 
-## 🚧 Roadmap
+## Roadmap
 
 Future enhancements:
 - [ ] Multi-language UI support
@@ -475,7 +475,7 @@ Future enhancements:
 
 ---
 
-**Built with ❤️ for farmers and agricultural workers worldwide**
+**Built for farmers and agricultural workers worldwide**
 
 
 

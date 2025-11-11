@@ -1,4 +1,4 @@
-# 🚀 Run the Demo - Quick Instructions
+# Run the Demo - Quick Instructions
 
 ## Option 1: Quick Demo (5-10 minutes)
 
@@ -12,15 +12,15 @@ python demo_test.py
 ```
 
 **What it does:**
-- ✅ Creates 5 classes with 50 synthetic images each
-- ✅ Preprocesses all images
-- ✅ Extracts manual features (color, texture, shape)
-- ✅ Trains Random Forest model
-- ✅ Trains MobileNetV2 (3 epochs)
-- ✅ Evaluates both models
-- ✅ Tests inference pipeline
-- ✅ Converts to TFLite for mobile deployment
-- ✅ Creates visualization
+- Creates 5 classes with 50 synthetic images each
+- Preprocesses all images
+- Extracts manual features (color, texture, shape)
+- Trains Random Forest model
+- Trains MobileNetV2 (3 epochs)
+- Evaluates both models
+- Tests inference pipeline
+- Converts to TFLite for mobile deployment
+- Creates visualization
 
 **Expected output:** Creates `demo_data/` folder with:
 - Synthetic dataset images
@@ -197,42 +197,42 @@ cat results/model_comparison.csv
 PLANT DISEASE DETECTION SYSTEM - END-TO-END DEMO
 ================================================================================
 
-📦 STEP 1: Creating Synthetic Test Dataset
-✓ Created 5 classes with 50 images each
+STEP 1: Creating Synthetic Test Dataset
+Created 5 classes with 50 images each
 
-📊 STEP 2: Creating Train/Val/Test Splits
-✓ Split created: 175 train, 35 val, 40 test
+STEP 2: Creating Train/Val/Test Splits
+Split created: 175 train, 35 val, 40 test
 
-🔧 STEP 3: Testing Preprocessing Pipeline
-✓ Preprocessing complete
+STEP 3: Testing Preprocessing Pipeline
+Preprocessing complete
 
-🎨 STEP 4: Testing Feature Extraction
-✓ Feature extraction complete: 256 features
+STEP 4: Testing Feature Extraction
+Feature extraction complete: 256 features
 
-🤖 STEP 5: Training Classical ML Model
-✓ Random Forest trained: 85% accuracy
+STEP 5: Training Classical ML Model
+Random Forest trained: 85% accuracy
 
-🧠 STEP 6: Training Deep Learning Model
-✓ MobileNetV2 trained: 98% accuracy
+STEP 6: Training Deep Learning Model
+MobileNetV2 trained: 98% accuracy
 
-📈 STEP 7: Evaluating Models
-✓ Models evaluated
+STEP 7: Evaluating Models
+Models evaluated
 
-🔮 STEP 8: Testing Inference Pipeline
-✓ Prediction: Tomato_Late_Blight (97.3% confidence)
+STEP 8: Testing Inference Pipeline
+Prediction: Tomato_Late_Blight (97.3% confidence)
 
-📱 STEP 9: Testing Model Conversion
-✓ TFLite model: 4.2 MB
+STEP 9: Testing Model Conversion
+TFLite model: 4.2 MB
 
-📊 STEP 10: Creating Results Visualization
-✓ Visualization saved
+STEP 10: Creating Results Visualization
+Visualization saved
 
-🎉 END-TO-END DEMO COMPLETE!
+END-TO-END DEMO COMPLETE!
 ```
 
 ---
 
-**Ready to run! Open your terminal and copy-paste the commands above.** 🚀
+**Ready to run! Open your terminal and copy-paste the commands above.**
 
 
 

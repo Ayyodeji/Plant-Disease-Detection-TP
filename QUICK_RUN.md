@@ -1,4 +1,4 @@
-# 🚀 Quick Run Guide - Plant Disease Detection
+# Quick Run Guide - Plant Disease Detection
 
 ## TL;DR - Just Run It
 
@@ -45,7 +45,7 @@ ls models/deep_learning/
 
 ---
 
-## 🆘 If It Crashes
+## If It Crashes
 
 Edit `config.yaml` and change:
 
@@ -62,12 +62,12 @@ Then run again.
 
 ---
 
-## 📊 What You'll Get
+## What You'll Get
 
 - **Models:** Trained AI models in `models/` folder
 - **Results:** Performance metrics in `results/` folder  
 - **Graphs:** Visual comparisons in `visualizations/` folder
 
-Done! ✅
+Done!
 
 
