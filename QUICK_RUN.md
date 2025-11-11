@@ -30,15 +30,6 @@ chmod 600 ~/.kaggle/kaggle.json
 ```bash
 python main.py --step all
 ```
-
-**Option B - Classical ML Only (2 hours, needs 8GB RAM):**
-```bash
-python main.py --step data
-python main.py --step preprocess
-python main.py --step features
-python main.py --step classical
-```
-
 ---
 
 ### 3. Check Results
