@@ -1,0 +1,41 @@
+# Plant Disease Detection System - Dependencies
+# Core ML/DL Libraries
+tensorflow>=2.13.0
+torch>=2.0.0
+torchvision>=0.15.0
+scikit-learn>=1.3.0
+scikit-image>=0.21.0
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+opencv-python>=4.8.0
+Pillow>=10.0.0
+albumentations>=1.3.0
+
+# Feature Extraction
+mahotas>=1.4.13
+scipy>=1.11.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.14.0
+
+# Model Management
+joblib>=1.3.0
+onnx>=1.14.0
+onnxruntime>=1.15.0
+
+# Dataset Download
+kagglehub>=0.2.0
+
+# Utilities
+tqdm>=4.65.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Deployment (optional for edge devices)
+# tensorflow-lite is included in tensorflow package
+# coremltools>=7.0  # For iOS deployment (optional)
+

@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Data (large files)
+data/raw/*
+data/processed/*.npy
+!data/processed/class_mapping.json
+!data/processed/split_info.json
+
+# Models (large files)
+models/classical_ml/*.pkl
+models/deep_learning/*.h5
+models/deployment/*.tflite
+models/deployment/*.onnx
+
+# Keep model directories but ignore large files
+!models/classical_ml/.gitkeep
+!models/deep_learning/.gitkeep
+!models/deployment/.gitkeep
+
+# Results and visualizations (can be regenerated)
+results/*.png
+visualizations/*.png
+logs/*.csv
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kaggle credentials
+.kaggle/
+kaggle.json
+
+# Temporary files
+*.log
+*.tmp
+
