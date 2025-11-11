@@ -264,3 +264,4 @@ Congratulations! Your system is ready. Now:
 **Happy plant disease detecting! 🌱**
 
 
+
