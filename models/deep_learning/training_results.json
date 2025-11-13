@@ -1,0 +1,9 @@
+{
+  "mobilenet_v2": {
+    "model_name": "mobilenet_v2",
+    "final_train_accuracy": 1.0,
+    "final_val_accuracy": 0.9800000190734863,
+    "best_val_accuracy": 0.9933333396911621,
+    "total_epochs": 30
+  }
+}
