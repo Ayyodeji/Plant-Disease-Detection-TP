@@ -68,9 +68,9 @@ deep_learning:
     # - "resnet50"  # Commented out - requires internet to download weights
     # - "efficientnet_b0"  # Commented out - requires internet to download weights
   batch_size: 32
-  epochs: 50
+  epochs: 10
   learning_rate: 0.001
-  early_stopping_patience: 10
+  early_stopping_patience: 7
   reduce_lr_patience: 5
   optimizer: "adam"
   loss: "categorical_crossentropy"
