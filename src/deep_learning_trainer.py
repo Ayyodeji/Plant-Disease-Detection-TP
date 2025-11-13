@@ -2,6 +2,7 @@
 Deep Learning Training Module
 
 Trains deep learning models (MobileNet, ResNet, EfficientNet) for plant disease classification.
+Converted from TensorFlow to PyTorch.
 """
 
 import numpy as np
@@ -9,15 +10,46 @@ import yaml
 import json
 from pathlib import Path
 from typing import Dict, Tuple, List, Optional
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, models, optimizers, callbacks
-from tensorflow.keras.applications import (
-    MobileNetV2, ResNet50, EfficientNetB0
-)
-from tensorflow.keras.utils import to_categorical
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader, TensorDataset
+import torchvision.models as models
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+
+
+class PlantDiseaseDataset(Dataset):
+    """Custom PyTorch Dataset for plant disease images."""
+    
+    def __init__(self, images: np.ndarray, labels: np.ndarray, transform=None):
+        """
+        Initialize dataset.
+        
+        Args:
+            images: Image array (N, H, W, C)
+            labels: Label array
+            transform: Optional transforms
+        """
+        # Convert images from (N, H, W, C) to (N, C, H, W) for PyTorch
+        if images.shape[-1] == 3:
+            images = np.transpose(images, (0, 3, 1, 2))
+        
+        self.images = torch.from_numpy(images).float()
+        self.labels = torch.from_numpy(labels).long()
+        self.transform = transform
+    
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, idx):
+        image = self.images[idx]
+        label = self.labels[idx]
+        
+        if self.transform:
+            image = self.transform(image)
+        
+        return image, label
 
 
 class DeepLearningTrainer:
@@ -37,6 +69,10 @@ class DeepLearningTrainer:
         self.output_dir = Path(self.config['output']['models_dir']) / 'deep_learning'
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
+        # Set device
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(f"Using device: {self.device}")
+        
         # Set random seeds for reproducibility
         self._set_seeds()
         
@@ -47,7 +83,12 @@ class DeepLearningTrainer:
         """Set random seeds for reproducibility."""
         seed = self.config['data']['random_seed']
         np.random.seed(seed)
-        tf.random.set_seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
     
     def create_model(
         self,
@@ -55,85 +96,89 @@ class DeepLearningTrainer:
         num_classes: int,
         input_shape: Tuple[int, int, int] = (224, 224, 3),
         freeze_base: bool = False
-    ) -> keras.Model:
+    ) -> nn.Module:
         """
         Create a deep learning model.
         
         Args:
             model_name: Name of the model architecture
             num_classes: Number of output classes
-            input_shape: Input image shape
+            input_shape: Input image shape (height, width, channels)
             freeze_base: Whether to freeze base model weights
             
         Returns:
-            Keras model
+            PyTorch model
         """
         print(f"\nCreating {model_name} model...")
         
         # Load base model
         if model_name == 'mobilenet_v2':
-            base_model = MobileNetV2(
-                input_shape=input_shape,
-                include_top=False,
-                weights='imagenet'
-            )
+            weights = models.MobileNet_V2_Weights.IMAGENET1K_V1
+            base_model = models.mobilenet_v2(weights=weights)
+            feature_dim = 1280  # MobileNetV2 feature dimension
+            # Use the features part only
+            base_model = base_model.features
+        
         elif model_name == 'resnet50':
-            base_model = ResNet50(
-                input_shape=input_shape,
-                include_top=False,
-                weights='imagenet'
-            )
+            weights = models.ResNet50_Weights.IMAGENET1K_V1
+            base_model = models.resnet50(weights=weights)
+            feature_dim = 2048  # ResNet50 feature dimension
+            # Remove the last fc layer and avgpool
+            base_model = nn.Sequential(*list(base_model.children())[:-2])
+        
         elif model_name == 'efficientnet_b0':
-            base_model = EfficientNetB0(
-                input_shape=input_shape,
-                include_top=False,
-                weights='imagenet'
-            )
+            weights = models.EfficientNet_B0_Weights.IMAGENET1K_V1
+            base_model = models.efficientnet_b0(weights=weights)
+            feature_dim = 1280  # EfficientNetB0 feature dimension
+            # Use the features part only
+            base_model = base_model.features
+        
         else:
             raise ValueError(f"Unknown model: {model_name}")
         
         # Freeze base model if specified
-        base_model.trainable = not freeze_base
+        if freeze_base:
+            for param in base_model.parameters():
+                param.requires_grad = False
         
-        # Build model
-        inputs = keras.Input(shape=input_shape)
+        # Build complete model
+        model = nn.Sequential(
+            base_model,
+            nn.AdaptiveAvgPool2d((1, 1)),
+            nn.Flatten(),
+            nn.BatchNorm1d(feature_dim),
+            nn.Dropout(0.5),
+            nn.Linear(feature_dim, 512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512),
+            nn.Dropout(0.3),
+            nn.Linear(512, num_classes)
+        )
         
-        # Data augmentation layers (applied during training)
-        x = inputs
+        model = model.to(self.device)
         
-        # Base model
-        x = base_model(x, training=not freeze_base)
+        total_params = sum(p.numel() for p in model.parameters())
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         
-        # Classification head
-        x = layers.GlobalAveragePooling2D()(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Dropout(0.5)(x)
-        x = layers.Dense(512, activation='relu')(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Dropout(0.3)(x)
-        outputs = layers.Dense(num_classes, activation='softmax')(x)
-        
-        model = keras.Model(inputs, outputs)
-        
-        print(f"Model created with {model.count_params():,} parameters")
+        print(f"Model created with {total_params:,} parameters ({trainable_params:,} trainable)")
         print(f"Base model frozen: {freeze_base}")
         
         return model
     
-    def compile_model(
+    def get_optimizer(
         self,
-        model: keras.Model,
+        model: nn.Module,
         learning_rate: Optional[float] = None
-    ) -> keras.Model:
+    ) -> optim.Optimizer:
         """
-        Compile model with optimizer and loss.
+        Get optimizer for model.
         
         Args:
-            model: Keras model
+            model: PyTorch model
             learning_rate: Learning rate (uses config if None)
             
         Returns:
-            Compiled model
+            Optimizer
         """
         if learning_rate is None:
             learning_rate = self.dl_config['learning_rate']
@@ -141,70 +186,193 @@ class DeepLearningTrainer:
         optimizer_name = self.dl_config['optimizer']
         
         if optimizer_name == 'adam':
-            optimizer = optimizers.Adam(learning_rate=learning_rate)
+            optimizer = optim.Adam(model.parameters(), lr=learning_rate)
         elif optimizer_name == 'sgd':
-            optimizer = optimizers.SGD(
-                learning_rate=learning_rate,
+            optimizer = optim.SGD(
+                model.parameters(),
+                lr=learning_rate,
                 momentum=0.9,
                 nesterov=True
             )
         else:
-            optimizer = optimizer_name
+            optimizer = optim.Adam(model.parameters(), lr=learning_rate)
         
-        model.compile(
-            optimizer=optimizer,
-            loss=self.dl_config['loss'],
-            metrics=['accuracy', 
-                    keras.metrics.Precision(name='precision'),
-                    keras.metrics.Recall(name='recall')]
-        )
-        
-        return model
+        return optimizer
     
-    def get_callbacks(
+    def get_scheduler(
         self,
-        model_name: str,
-        monitor: str = 'val_accuracy'
-    ) -> List[keras.callbacks.Callback]:
+        optimizer: optim.Optimizer,
+        patience: int = None
+    ) -> optim.lr_scheduler._LRScheduler:
         """
-        Get training callbacks.
+        Get learning rate scheduler.
         
         Args:
-            model_name: Name of the model
-            monitor: Metric to monitor
+            optimizer: Optimizer
+            patience: Patience for ReduceLROnPlateau
             
         Returns:
-            List of callbacks
+            Scheduler
         """
-        checkpoint_path = self.output_dir / f'{model_name}_best.h5'
+        if patience is None:
+            patience = self.dl_config['reduce_lr_patience']
         
-        callback_list = [
-            callbacks.ModelCheckpoint(
-                filepath=str(checkpoint_path),
-                monitor=monitor,
-                save_best_only=True,
-                mode='max',
-                verbose=1
-            ),
-            callbacks.EarlyStopping(
-                monitor=monitor,
-                patience=self.dl_config['early_stopping_patience'],
-                restore_best_weights=True,
-                verbose=1
-            ),
-            callbacks.ReduceLROnPlateau(
-                monitor=monitor,
-                factor=0.5,
-                patience=self.dl_config['reduce_lr_patience'],
-                min_lr=1e-7,
-                verbose=1
-            ),
-            callbacks.CSVLogger(
-                self.output_dir / f'{model_name}_training_log.csv'
-            )
-        ]
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='max',
+            factor=0.5,
+            patience=patience,
+            min_lr=1e-7
+        )
         
-        return callback_list
+        return scheduler
+    
+    def calculate_metrics(
+        self,
+        predictions: torch.Tensor,
+        targets: torch.Tensor
+    ) -> Dict[str, float]:
+        """
+        Calculate evaluation metrics.
+        
+        Args:
+            predictions: Model predictions (logits)
+            targets: True labels
+            
+        Returns:
+            Dictionary of metrics
+        """
+        pred_classes = torch.argmax(predictions, dim=1)
+        correct = (pred_classes == targets).float()
+        accuracy = correct.mean().item()
+        
+        # Calculate precision and recall (macro average)
+        num_classes = predictions.shape[1]
+        precision_sum = 0
+        recall_sum = 0
+        
+        for c in range(num_classes):
+            true_positives = ((pred_classes == c) & (targets == c)).sum().float()
+            predicted_positives = (pred_classes == c).sum().float()
+            actual_positives = (targets == c).sum().float()
+            
+            precision = true_positives / (predicted_positives + 1e-10)
+            recall = true_positives / (actual_positives + 1e-10)
+            
+            precision_sum += precision.item()
+            recall_sum += recall.item()
+        
+        return {
+            'accuracy': accuracy,
+            'precision': precision_sum / num_classes,
+            'recall': recall_sum / num_classes
+        }
+    
+    def train_epoch(
+        self,
+        model: nn.Module,
+        train_loader: DataLoader,
+        criterion: nn.Module,
+        optimizer: optim.Optimizer,
+        epoch: int
+    ) -> Dict[str, float]:
+        """
+        Train for one epoch.
+        
+        Args:
+            model: PyTorch model
+            train_loader: Training data loader
+            criterion: Loss function
+            optimizer: Optimizer
+            epoch: Current epoch number
+            
+        Returns:
+            Dictionary of training metrics
+        """
+        model.train()
+        
+        running_loss = 0.0
+        all_predictions = []
+        all_targets = []
+        
+        progress_bar = tqdm(train_loader, desc=f"Epoch {epoch}")
+        
+        for images, labels in progress_bar:
+            images = images.to(self.device)
+            labels = labels.to(self.device)
+            
+            # Forward pass
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            
+            # Backward pass
+            loss.backward()
+            optimizer.step()
+            
+            # Track metrics
+            running_loss += loss.item() * images.size(0)
+            all_predictions.append(outputs.detach())
+            all_targets.append(labels.detach())
+            
+            progress_bar.set_postfix({'loss': loss.item()})
+        
+        # Calculate epoch metrics
+        all_predictions = torch.cat(all_predictions)
+        all_targets = torch.cat(all_targets)
+        
+        epoch_loss = running_loss / len(train_loader.dataset)
+        metrics = self.calculate_metrics(all_predictions, all_targets)
+        metrics['loss'] = epoch_loss
+        
+        return metrics
+    
+    def validate_epoch(
+        self,
+        model: nn.Module,
+        val_loader: DataLoader,
+        criterion: nn.Module
+    ) -> Dict[str, float]:
+        """
+        Validate for one epoch.
+        
+        Args:
+            model: PyTorch model
+            val_loader: Validation data loader
+            criterion: Loss function
+            
+        Returns:
+            Dictionary of validation metrics
+        """
+        model.eval()
+        
+        running_loss = 0.0
+        all_predictions = []
+        all_targets = []
+        
+        with torch.no_grad():
+            for images, labels in val_loader:
+                images = images.to(self.device)
+                labels = labels.to(self.device)
+                
+                # Forward pass
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                
+                # Track metrics
+                running_loss += loss.item() * images.size(0)
+                all_predictions.append(outputs)
+                all_targets.append(labels)
+        
+        # Calculate epoch metrics
+        all_predictions = torch.cat(all_predictions)
+        all_targets = torch.cat(all_targets)
+        
+        epoch_loss = running_loss / len(val_loader.dataset)
+        metrics = self.calculate_metrics(all_predictions, all_targets)
+        metrics['loss'] = epoch_loss
+        
+        return metrics
     
     def train_model(
         self,
@@ -235,60 +403,168 @@ class DeepLearningTrainer:
         print(f"Training {model_name.upper()}")
         print(f"{'='*70}")
         
-        # Convert labels to categorical if needed
-        if len(y_train.shape) == 1:
-            y_train_cat = to_categorical(y_train, num_classes)
-            y_val_cat = to_categorical(y_val, num_classes)
-        else:
-            y_train_cat = y_train
-            y_val_cat = y_val
+        # Create datasets and data loaders
+        train_dataset = PlantDiseaseDataset(X_train, y_train)
+        val_dataset = PlantDiseaseDataset(X_val, y_val)
+        
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=self.dl_config['batch_size'],
+            shuffle=True,
+            num_workers=2,
+            pin_memory=True if torch.cuda.is_available() else False
+        )
+        
+        val_loader = DataLoader(
+            val_dataset,
+            batch_size=self.dl_config['batch_size'],
+            shuffle=False,
+            num_workers=2,
+            pin_memory=True if torch.cuda.is_available() else False
+        )
         
         # Phase 1: Train with frozen base
         print("\nPhase 1: Training with frozen base model...")
         model = self.create_model(model_name, num_classes, freeze_base=True)
-        model = self.compile_model(model)
         
-        history1 = model.fit(
-            X_train, y_train_cat,
-            batch_size=self.dl_config['batch_size'],
-            epochs=min(10, self.dl_config['epochs'] // 3),
-            validation_data=(X_val, y_val_cat),
-            callbacks=self.get_callbacks(f'{model_name}_phase1'),
-            verbose=1
-        )
+        criterion = nn.CrossEntropyLoss()
+        optimizer = self.get_optimizer(model)
+        scheduler = self.get_scheduler(optimizer)
+        
+        history = {
+            'loss': [],
+            'accuracy': [],
+            'precision': [],
+            'recall': [],
+            'val_loss': [],
+            'val_accuracy': [],
+            'val_precision': [],
+            'val_recall': []
+        }
+        
+        best_val_accuracy = 0.0
+        patience_counter = 0
+        max_patience = self.dl_config['early_stopping_patience']
+        
+        phase1_epochs = min(10, self.dl_config['epochs'] // 3)
+        
+        for epoch in range(1, phase1_epochs + 1):
+            # Train
+            train_metrics = self.train_epoch(model, train_loader, criterion, optimizer, epoch)
+            
+            # Validate
+            val_metrics = self.validate_epoch(model, val_loader, criterion)
+            
+            # Update scheduler
+            scheduler.step(val_metrics['accuracy'])
+            
+            # Record history
+            history['loss'].append(train_metrics['loss'])
+            history['accuracy'].append(train_metrics['accuracy'])
+            history['precision'].append(train_metrics['precision'])
+            history['recall'].append(train_metrics['recall'])
+            history['val_loss'].append(val_metrics['loss'])
+            history['val_accuracy'].append(val_metrics['accuracy'])
+            history['val_precision'].append(val_metrics['precision'])
+            history['val_recall'].append(val_metrics['recall'])
+            
+            print(f"\nEpoch {epoch}:")
+            print(f"  Train Loss: {train_metrics['loss']:.4f}, Accuracy: {train_metrics['accuracy']:.4f}")
+            print(f"  Val Loss: {val_metrics['loss']:.4f}, Accuracy: {val_metrics['accuracy']:.4f}")
+            
+            # Save best model
+            if val_metrics['accuracy'] > best_val_accuracy:
+                best_val_accuracy = val_metrics['accuracy']
+                checkpoint_path = self.output_dir / f'{model_name}_phase1_best.pth'
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'val_accuracy': best_val_accuracy,
+                }, checkpoint_path)
+                patience_counter = 0
+            else:
+                patience_counter += 1
+            
+            # Early stopping
+            if patience_counter >= max_patience:
+                print(f"\nEarly stopping triggered at epoch {epoch}")
+                break
         
         # Phase 2: Fine-tuning (if enabled)
         if fine_tune:
             print("\nPhase 2: Fine-tuning entire model...")
             
-            # Unfreeze base model
-            for layer in model.layers:
-                layer.trainable = True
+            # Load best model from phase 1
+            checkpoint = torch.load(self.output_dir / f'{model_name}_phase1_best.pth')
             
-            # Recompile with lower learning rate
-            model = self.compile_model(
-                model,
-                learning_rate=self.dl_config['learning_rate'] / 10
-            )
+            # Create new model with unfrozen base
+            model = self.create_model(model_name, num_classes, freeze_base=False)
+            model.load_state_dict(checkpoint['model_state_dict'])
             
-            history2 = model.fit(
-                X_train, y_train_cat,
-                batch_size=self.dl_config['batch_size'],
-                epochs=self.dl_config['epochs'],
-                initial_epoch=len(history1.history['loss']),
-                validation_data=(X_val, y_val_cat),
-                callbacks=self.get_callbacks(model_name),
-                verbose=1
-            )
+            # New optimizer with lower learning rate
+            optimizer = self.get_optimizer(model, learning_rate=self.dl_config['learning_rate'] / 10)
+            scheduler = self.get_scheduler(optimizer)
             
-            # Combine histories
-            history = self._combine_histories(history1, history2)
-        else:
-            history = history1
+            best_val_accuracy = checkpoint['val_accuracy']
+            patience_counter = 0
+            
+            initial_epoch = len(history['loss'])
+            
+            for epoch in range(1, self.dl_config['epochs'] - initial_epoch + 1):
+                # Train
+                train_metrics = self.train_epoch(model, train_loader, criterion, optimizer, initial_epoch + epoch)
+                
+                # Validate
+                val_metrics = self.validate_epoch(model, val_loader, criterion)
+                
+                # Update scheduler
+                scheduler.step(val_metrics['accuracy'])
+                
+                # Record history
+                history['loss'].append(train_metrics['loss'])
+                history['accuracy'].append(train_metrics['accuracy'])
+                history['precision'].append(train_metrics['precision'])
+                history['recall'].append(train_metrics['recall'])
+                history['val_loss'].append(val_metrics['loss'])
+                history['val_accuracy'].append(val_metrics['accuracy'])
+                history['val_precision'].append(val_metrics['precision'])
+                history['val_recall'].append(val_metrics['recall'])
+                
+                print(f"\nEpoch {initial_epoch + epoch}:")
+                print(f"  Train Loss: {train_metrics['loss']:.4f}, Accuracy: {train_metrics['accuracy']:.4f}")
+                print(f"  Val Loss: {val_metrics['loss']:.4f}, Accuracy: {val_metrics['accuracy']:.4f}")
+                
+                # Save best model
+                if val_metrics['accuracy'] > best_val_accuracy:
+                    best_val_accuracy = val_metrics['accuracy']
+                    checkpoint_path = self.output_dir / f'{model_name}_best.pth'
+                    torch.save({
+                        'epoch': initial_epoch + epoch,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'val_accuracy': best_val_accuracy,
+                    }, checkpoint_path)
+                    patience_counter = 0
+                else:
+                    patience_counter += 1
+                
+                # Early stopping
+                if patience_counter >= max_patience:
+                    print(f"\nEarly stopping triggered at epoch {initial_epoch + epoch}")
+                    break
+            
+            # Load best model
+            checkpoint = torch.load(self.output_dir / f'{model_name}_best.pth')
+            model.load_state_dict(checkpoint['model_state_dict'])
         
         # Save final model
-        model_path = self.output_dir / f'{model_name}_final.h5'
-        model.save(str(model_path))
+        model_path = self.output_dir / f'{model_name}_final.pth'
+        torch.save({
+            'model_state_dict': model.state_dict(),
+            'num_classes': num_classes,
+            'model_name': model_name,
+        }, model_path)
         print(f"\nFinal model saved to: {model_path}")
         
         # Store model and history
@@ -298,32 +574,18 @@ class DeepLearningTrainer:
         # Extract results
         results = {
             'model_name': model_name,
-            'final_train_accuracy': float(history.history['accuracy'][-1]),
-            'final_val_accuracy': float(history.history['val_accuracy'][-1]),
-            'best_val_accuracy': float(max(history.history['val_accuracy'])),
-            'total_epochs': len(history.history['loss'])
+            'final_train_accuracy': float(history['accuracy'][-1]),
+            'final_val_accuracy': float(history['val_accuracy'][-1]),
+            'best_val_accuracy': float(max(history['val_accuracy'])),
+            'total_epochs': len(history['loss'])
         }
         
         # Save training history
         history_path = self.output_dir / f'{model_name}_history.json'
         with open(history_path, 'w') as f:
-            json.dump(
-                {k: [float(v) for v in vals] for k, vals in history.history.items()},
-                f,
-                indent=2
-            )
+            json.dump(history, f, indent=2)
         
         return results
-    
-    def _combine_histories(self, hist1, hist2) -> keras.callbacks.History:
-        """Combine two training histories."""
-        combined = keras.callbacks.History()
-        combined.history = {}
-        
-        for key in hist1.history.keys():
-            combined.history[key] = hist1.history[key] + hist2.history[key]
-        
-        return combined
     
     def train_all_models(
         self,
@@ -349,18 +611,27 @@ class DeepLearningTrainer:
         all_results = {}
         
         for model_name in self.dl_config['models']:
-            results = self.train_model(
-                model_name,
-                X_train,
-                y_train,
-                X_val,
-                y_val,
-                num_classes
-            )
-            all_results[model_name] = results
-            
-            # Plot and save training curves
-            self.plot_training_history(model_name)
+            try:
+                results = self.train_model(
+                    model_name,
+                    X_train,
+                    y_train,
+                    X_val,
+                    y_val,
+                    num_classes
+                )
+                all_results[model_name] = results
+                
+                # Plot and save training curves
+                self.plot_training_history(model_name)
+            except Exception as e:
+                print(f"\n{'='*70}")
+                print(f"ERROR: Failed to train {model_name}")
+                print(f"Reason: {str(e)}")
+                print(f"Skipping this model and continuing with others...")
+                print(f"{'='*70}\n")
+                all_results[model_name] = {'error': str(e), 'status': 'failed'}
+                continue
         
         # Save all results
         results_path = self.output_dir / 'training_results.json'
@@ -369,6 +640,8 @@ class DeepLearningTrainer:
         
         print(f"\n{'='*70}")
         print(f"All results saved to: {results_path}")
+        print(f"Successfully trained: {sum(1 for r in all_results.values() if 'error' not in r)} models")
+        print(f"Failed to train: {sum(1 for r in all_results.values() if 'error' in r)} models")
         print(f"{'='*70}")
         
         return all_results
@@ -383,7 +656,7 @@ class DeepLearningTrainer:
         if model_name not in self.histories:
             return
         
-        history = self.histories[model_name].history
+        history = self.histories[model_name]
         
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
         
@@ -434,33 +707,33 @@ class DeepLearningTrainer:
         
         print(f"Training curves saved to: {fig_path}")
     
-    def load_model(self, model_name: str, phase: str = 'final') -> keras.Model:
+    def load_model(self, model_name: str, num_classes: int, phase: str = 'final') -> nn.Module:
         """
         Load a saved model.
         
         Args:
             model_name: Name of the model
+            num_classes: Number of classes
             phase: Which phase to load ('final' or 'best')
             
         Returns:
             Loaded model
         """
         if phase == 'final':
-            model_path = self.output_dir / f'{model_name}_final.h5'
+            model_path = self.output_dir / f'{model_name}_final.pth'
         else:
-            model_path = self.output_dir / f'{model_name}_best.h5'
+            model_path = self.output_dir / f'{model_name}_best.pth'
         
         if not model_path.exists():
             raise FileNotFoundError(f"Model not found: {model_path}")
         
-        model = keras.models.load_model(str(model_path))
+        # Create model architecture
+        model = self.create_model(model_name, num_classes, freeze_base=False)
+        
+        # Load weights
+        checkpoint = torch.load(model_path, map_location=self.device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        model.eval()
+        
         self.models[model_name] = model
         return model
-
-
-if __name__ == "__main__":
-    print("Deep Learning Trainer module initialized")
-    print("This module should be imported and used in the main training pipeline")
-
-
-

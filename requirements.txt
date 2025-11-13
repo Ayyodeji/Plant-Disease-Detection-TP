@@ -1,6 +1,5 @@
 # Plant Disease Detection System - Dependencies
 # Core ML/DL Libraries
-tensorflow>=2.13.0
 torch>=2.0.0
 torchvision>=0.15.0
 scikit-learn>=1.3.0
@@ -26,6 +25,7 @@ plotly>=5.14.0
 joblib>=1.3.0
 onnx>=1.14.0
 onnxruntime>=1.15.0
+onnxscript>=0.5.0
 
 # Dataset Download
 kagglehub>=0.2.0
@@ -36,6 +36,6 @@ pyyaml>=6.0
 python-dotenv>=1.0.0
 
 # Deployment (optional for edge devices)
-# tensorflow-lite is included in tensorflow package
+# PyTorch has built-in ONNX export support
 # coremltools>=7.0  # For iOS deployment (optional)
 

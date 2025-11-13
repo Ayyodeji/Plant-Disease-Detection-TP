@@ -1,8 +1,9 @@
 """
 Deployment Module
 
-Converts models to deployment-ready formats (ONNX, TFLite)
+Converts models to deployment-ready formats (ONNX, TorchScript)
 and creates inference pipelines for edge devices.
+Converted from TensorFlow to PyTorch.
 """
 
 import numpy as np
@@ -10,15 +11,15 @@ import yaml
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Union
-import tensorflow as tf
+import torch
+import torch.nn as nn
 import joblib
 import onnx
 import onnxruntime as ort
-from tensorflow import keras
 
 
 class ModelConverter:
-    """Convert models to deployment formats."""
+    """Convert PyTorch models to deployment formats."""
     
     def __init__(self, config_path: str = "config.yaml"):
         """
@@ -34,134 +35,191 @@ class ModelConverter:
         self.models_dir = Path(self.config['output']['models_dir'])
         self.deploy_dir = self.models_dir / 'deployment'
         self.deploy_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    def convert_to_tflite(
+    def convert_to_torchscript(
         self,
-        model: keras.Model,
+        model: nn.Module,
         model_name: str,
-        quantize: bool = True
+        input_shape: Tuple[int, int, int, int] = (1, 3, 224, 224),
+        optimize: bool = True
     ) -> str:
         """
-        Convert Keras model to TensorFlow Lite.
+        Convert PyTorch model to TorchScript.
         
         Args:
-            model: Keras model
+            model: PyTorch model
             model_name: Name of the model
-            quantize: Whether to apply quantization
+            input_shape: Input shape (batch, channels, height, width)
+            optimize: Whether to optimize for mobile
             
         Returns:
-            Path to saved TFLite model
+            Path to saved TorchScript model
         """
-        print(f"\nConverting {model_name} to TensorFlow Lite...")
+        print(f"\nConverting {model_name} to TorchScript...")
         
-        # Convert to TFLite
-        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        model.eval()
         
-        if quantize:
-            print("Applying quantization...")
-            converter.optimizations = [tf.lite.Optimize.DEFAULT]
-            converter.target_spec.supported_types = [tf.float16]
+        # Create example input
+        example_input = torch.randn(input_shape).to(self.device)
         
-        tflite_model = converter.convert()
+        # Trace the model
+        traced_model = torch.jit.trace(model, example_input)
+        
+        if optimize:
+            print("Optimizing for mobile...")
+            # Optimize for mobile deployment
+            from torch.utils.mobile_optimizer import optimize_for_mobile
+            traced_model = optimize_for_mobile(traced_model)
         
         # Save
-        suffix = '_quantized' if quantize else ''
-        save_path = self.deploy_dir / f'{model_name}{suffix}.tflite'
+        suffix = '_optimized' if optimize else ''
+        save_path = self.deploy_dir / f'{model_name}{suffix}.pt'
         
-        with open(save_path, 'wb') as f:
-            f.write(tflite_model)
+        traced_model.save(str(save_path))
         
         # Get model size
-        size_mb = len(tflite_model) / (1024 * 1024)
-        print(f"TFLite model saved to: {save_path}")
+        size_mb = save_path.stat().st_size / (1024 * 1024)
+        print(f"TorchScript model saved to: {save_path}")
         print(f"Model size: {size_mb:.2f} MB")
         
         return str(save_path)
     
     def convert_to_onnx(
         self,
-        model_path: str,
+        model: nn.Module,
         model_name: str,
-        input_shape: Tuple[int, int, int, int] = (1, 224, 224, 3)
+        input_shape: Tuple[int, int, int, int] = (1, 3, 224, 224),
+        opset_version: int = 12
     ) -> str:
         """
-        Convert Keras model to ONNX format.
+        Convert PyTorch model to ONNX format.
         
         Args:
-            model_path: Path to saved Keras model
+            model: PyTorch model
             model_name: Name of the model
-            input_shape: Input shape (batch, height, width, channels)
+            input_shape: Input shape (batch, channels, height, width)
+            opset_version: ONNX opset version
             
         Returns:
             Path to saved ONNX model
         """
-        try:
-            import tf2onnx
-            
-            print(f"\nConverting {model_name} to ONNX...")
-            
-            # Load model
-            model = keras.models.load_model(model_path)
-            
-            # Convert to ONNX
-            spec = (tf.TensorSpec(input_shape, tf.float32, name="input"),)
-            
-            output_path = str(self.deploy_dir / f'{model_name}.onnx')
-            
-            model_proto, _ = tf2onnx.convert.from_keras(
-                model,
-                input_signature=spec,
-                output_path=output_path
-            )
-            
-            print(f"ONNX model saved to: {output_path}")
-            
-            return output_path
+        print(f"\nConverting {model_name} to ONNX...")
         
-        except ImportError:
-            print("tf2onnx not installed. Install with: pip install tf2onnx")
-            return None
+        model.eval()
+        
+        # Create dummy input
+        dummy_input = torch.randn(input_shape).to(self.device)
+        
+        # Export to ONNX
+        output_path = str(self.deploy_dir / f'{model_name}.onnx')
+        
+        torch.onnx.export(
+            model,
+            dummy_input,
+            output_path,
+            export_params=True,
+            opset_version=opset_version,
+            do_constant_folding=True,
+            input_names=['input'],
+            output_names=['output'],
+            dynamic_axes={
+                'input': {0: 'batch_size'},
+                'output': {0: 'batch_size'}
+            }
+        )
+        
+        # Verify the model
+        onnx_model = onnx.load(output_path)
+        onnx.checker.check_model(onnx_model)
+        
+        size_mb = Path(output_path).stat().st_size / (1024 * 1024)
+        print(f"ONNX model saved to: {output_path}")
+        print(f"Model size: {size_mb:.2f} MB")
+        
+        return output_path
     
-    def test_tflite_inference(
+    def quantize_model(
         self,
-        tflite_path: str,
+        model: nn.Module,
+        model_name: str,
+        calibration_data: Optional[torch.Tensor] = None
+    ) -> str:
+        """
+        Quantize PyTorch model for faster inference.
+        
+        Args:
+            model: PyTorch model
+            model_name: Name of the model
+            calibration_data: Optional calibration data for quantization
+            
+        Returns:
+            Path to saved quantized model
+        """
+        print(f"\nQuantizing {model_name}...")
+        
+        model.eval()
+        model.cpu()  # Quantization works on CPU
+        
+        # Dynamic quantization (works without calibration data)
+        quantized_model = torch.quantization.quantize_dynamic(
+            model,
+            {nn.Linear, nn.Conv2d},
+            dtype=torch.qint8
+        )
+        
+        # Save quantized model
+        save_path = self.deploy_dir / f'{model_name}_quantized.pth'
+        
+        torch.save({
+            'model_state_dict': quantized_model.state_dict(),
+            'model_name': model_name,
+        }, save_path)
+        
+        size_mb = save_path.stat().st_size / (1024 * 1024)
+        print(f"Quantized model saved to: {save_path}")
+        print(f"Model size: {size_mb:.2f} MB")
+        
+        return str(save_path)
+    
+    def test_torchscript_inference(
+        self,
+        torchscript_path: str,
         test_image: np.ndarray
     ) -> np.ndarray:
         """
-        Test TFLite model inference.
+        Test TorchScript model inference.
         
         Args:
-            tflite_path: Path to TFLite model
+            torchscript_path: Path to TorchScript model
             test_image: Test image
             
         Returns:
             Model predictions
         """
-        # Load TFLite model
-        interpreter = tf.lite.Interpreter(model_path=tflite_path)
-        interpreter.allocate_tensors()
-        
-        # Get input and output details
-        input_details = interpreter.get_input_details()
-        output_details = interpreter.get_output_details()
+        # Load TorchScript model
+        model = torch.jit.load(torchscript_path)
+        model.eval()
         
         # Prepare input
-        input_shape = input_details[0]['shape']
         if len(test_image.shape) == 3:
+            # Add batch dimension and convert to CHW format
+            test_image = np.transpose(test_image, (2, 0, 1))
             test_image = np.expand_dims(test_image, axis=0)
+        elif len(test_image.shape) == 4 and test_image.shape[-1] == 3:
+            # Convert from NHWC to NCHW
+            test_image = np.transpose(test_image, (0, 3, 1, 2))
         
-        test_image = test_image.astype(input_details[0]['dtype'])
-        
-        # Set input tensor
-        interpreter.set_tensor(input_details[0]['index'], test_image)
+        test_tensor = torch.from_numpy(test_image).float().to(self.device)
         
         # Run inference
-        interpreter.invoke()
+        with torch.no_grad():
+            output = model(test_tensor)
+            output = torch.softmax(output, dim=1)
+            output = output.cpu().numpy()
         
-        # Get output
-        output_data = interpreter.get_tensor(output_details[0]['index'])
-        
-        return output_data
+        return output
     
     def test_onnx_inference(
         self,
@@ -186,7 +244,12 @@ class ModelConverter:
         
         # Prepare input
         if len(test_image.shape) == 3:
+            # Add batch dimension and convert to CHW format
+            test_image = np.transpose(test_image, (2, 0, 1))
             test_image = np.expand_dims(test_image, axis=0)
+        elif len(test_image.shape) == 4 and test_image.shape[-1] == 3:
+            # Convert from NHWC to NCHW
+            test_image = np.transpose(test_image, (0, 3, 1, 2))
         
         test_image = test_image.astype(np.float32)
         
@@ -197,14 +260,14 @@ class ModelConverter:
 
 
 class InferencePipeline:
-    """Production-ready inference pipeline."""
+    """Production-ready inference pipeline for PyTorch models."""
     
     def __init__(
         self,
         model_path: str,
         class_mapping_path: str,
         config_path: str = "config.yaml",
-        model_type: str = "keras"
+        model_type: str = "pytorch"
     ):
         """
         Initialize InferencePipeline.
@@ -213,7 +276,7 @@ class InferencePipeline:
             model_path: Path to model file
             class_mapping_path: Path to class mapping JSON
             config_path: Path to configuration file
-            model_type: Type of model ('keras', 'tflite', 'onnx', 'sklearn')
+            model_type: Type of model ('pytorch', 'torchscript', 'onnx', 'sklearn')
         """
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
@@ -224,6 +287,9 @@ class InferencePipeline:
         
         self.idx_to_class = {v: k for k, v in self.class_to_idx.items()}
         self.num_classes = len(self.class_to_idx)
+        
+        # Set device
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         # Load model
         self.model_type = model_type
@@ -236,14 +302,22 @@ class InferencePipeline:
     
     def _load_model(self):
         """Load model based on type."""
-        if self.model_type == 'keras':
-            self.model = keras.models.load_model(self.model_path)
+        if self.model_type == 'pytorch':
+            # Load PyTorch model
+            from deep_learning_trainer import DeepLearningTrainer
+            
+            checkpoint = torch.load(self.model_path, map_location=self.device)
+            model_name = checkpoint.get('model_name', 'mobilenet_v2')
+            
+            trainer = DeepLearningTrainer(config_path='config.yaml')
+            self.model = trainer.create_model(model_name, self.num_classes, freeze_base=False)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.model.to(self.device)
+            self.model.eval()
         
-        elif self.model_type == 'tflite':
-            self.interpreter = tf.lite.Interpreter(model_path=self.model_path)
-            self.interpreter.allocate_tensors()
-            self.input_details = self.interpreter.get_input_details()
-            self.output_details = self.interpreter.get_output_details()
+        elif self.model_type == 'torchscript':
+            self.model = torch.jit.load(self.model_path, map_location=self.device)
+            self.model.eval()
         
         elif self.model_type == 'onnx':
             self.session = ort.InferenceSession(self.model_path)
@@ -281,31 +355,36 @@ class InferencePipeline:
         # Preprocess image
         image = self.preprocessor.preprocess(image_path)
         
-        # Add batch dimension if needed
+        # Add batch dimension and convert to CHW format if needed
         if len(image.shape) == 3:
+            # Convert from HWC to CHW
+            if image.shape[-1] == 3:
+                image = np.transpose(image, (2, 0, 1))
             image_batch = np.expand_dims(image, axis=0)
         else:
-            image_batch = image
+            # Already has batch dimension, check format
+            if image.shape[-1] == 3:
+                image_batch = np.transpose(image, (0, 3, 1, 2))
+            else:
+                image_batch = image
         
         # Make prediction based on model type
-        if self.model_type == 'keras':
-            probabilities = self.model.predict(image_batch, verbose=0)[0]
-        
-        elif self.model_type == 'tflite':
-            self.interpreter.set_tensor(
-                self.input_details[0]['index'],
-                image_batch.astype(self.input_details[0]['dtype'])
-            )
-            self.interpreter.invoke()
-            probabilities = self.interpreter.get_tensor(
-                self.output_details[0]['index']
-            )[0]
+        if self.model_type in ['pytorch', 'torchscript']:
+            image_tensor = torch.from_numpy(image_batch).float().to(self.device)
+            
+            with torch.no_grad():
+                outputs = self.model(image_tensor)
+                probabilities = torch.softmax(outputs, dim=1)[0].cpu().numpy()
         
         elif self.model_type == 'onnx':
-            probabilities = self.session.run(
+            outputs = self.session.run(
                 None,
                 {self.input_name: image_batch.astype(np.float32)}
             )[0][0]
+            
+            # Apply softmax
+            exp_outputs = np.exp(outputs - np.max(outputs))
+            probabilities = exp_outputs / exp_outputs.sum()
         
         elif self.model_type == 'sklearn':
             # For sklearn, we need features instead of raw image
@@ -404,6 +483,7 @@ class InferencePipeline:
 
 ## Model Information
 - Model Type: {self.model_type}
+- Framework: PyTorch
 - Number of Classes: {self.num_classes}
 - Input Size: {self.config['preprocessing']['target_size']}
 
@@ -424,8 +504,20 @@ result = pipeline.predict('path/to/image.jpg')
 print(result['top_prediction'])
 ```
 
+## Model Types Supported
+- `pytorch`: Standard PyTorch model (.pth)
+- `torchscript`: TorchScript model for deployment (.pt)
+- `onnx`: ONNX model for cross-platform deployment (.onnx)
+- `sklearn`: Classical ML model (.pkl)
+
 ## Requirements
 See requirements.txt for dependencies.
+
+## Performance
+For best performance:
+- Use TorchScript models for production deployments
+- Use ONNX models for edge devices or non-Python environments
+- Use quantized models for mobile/embedded devices
 
 ## License
 Please ensure compliance with dataset and model licensing terms.
@@ -435,11 +527,3 @@ Please ensure compliance with dataset and model licensing terms.
             f.write(readme_content)
         
         print(f"\nDeployment package saved to: {output_path}")
-
-
-if __name__ == "__main__":
-    print("Deployment module initialized")
-    print("This module handles model conversion and inference")
-
-
-

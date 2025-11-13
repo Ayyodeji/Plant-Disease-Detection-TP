@@ -351,76 +351,66 @@ class CNNFeatureExtractor:
             model_name: Name of pre-trained model to use
             config_path: Path to configuration file
         """
-        import tensorflow as tf
-        from tensorflow.keras.applications import (
-            MobileNetV2, ResNet50, EfficientNetB0
-        )
-        from tensorflow.keras.models import Model
+        import torch
+        import torchvision.models as models
         
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
         
         self.model_name = model_name
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         # Load pre-trained model
         if model_name == 'mobilenet_v2':
-            base_model = MobileNetV2(
-                weights='imagenet',
-                include_top=False,
-                pooling='avg'
-            )
+            base_model = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.IMAGENET1K_V1)
+            # Remove classifier to get features
+            self.model = torch.nn.Sequential(*list(base_model.children())[:-1])
+            feature_dim = 1280
         elif model_name == 'resnet50':
-            base_model = ResNet50(
-                weights='imagenet',
-                include_top=False,
-                pooling='avg'
-            )
+            base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+            # Remove classifier to get features
+            self.model = torch.nn.Sequential(*list(base_model.children())[:-1])
+            feature_dim = 2048
         elif model_name == 'efficientnet_b0':
-            base_model = EfficientNetB0(
-                weights='imagenet',
-                include_top=False,
-                pooling='avg'
-            )
+            base_model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1)
+            # Remove classifier to get features
+            self.model = torch.nn.Sequential(*list(base_model.children())[:-1])
+            feature_dim = 1280
         else:
             raise ValueError(f"Unknown model: {model_name}")
         
-        self.model = base_model
+        self.model = self.model.to(self.device)
+        self.model.eval()  # Set to evaluation mode
+        
         print(f"Loaded {model_name} for feature extraction")
-        print(f"Feature dimension: {self.model.output_shape[-1]}")
+        print(f"Feature dimension: {feature_dim}")
+        print(f"Using device: {self.device}")
     
     def extract_features(self, images: np.ndarray) -> np.ndarray:
         """
         Extract features from images using CNN.
         
         Args:
-            images: Batch of preprocessed images
+            images: Batch of preprocessed images (numpy array)
             
         Returns:
             Feature matrix
         """
-        features = self.model.predict(images, verbose=0)
+        import torch
+        
+        # Convert numpy array to torch tensor
+        # Assuming images are in (N, H, W, C) format, need (N, C, H, W) for PyTorch
+        if images.shape[-1] == 3:  # If channels last
+            images = np.transpose(images, (0, 3, 1, 2))
+        
+        images_tensor = torch.from_numpy(images).float().to(self.device)
+        
+        # Extract features
+        with torch.no_grad():
+            features = self.model(images_tensor)
+            # Flatten spatial dimensions if needed
+            features = features.view(features.size(0), -1)
+            features = features.cpu().numpy()
+        
         return features
-
-
-def test_feature_extraction():
-    """Test feature extraction."""
-    print("Testing feature extraction...")
-    
-    # Test manual feature extraction
-    extractor = ManualFeatureExtractor()
-    
-    # Create dummy image
-    dummy_image = np.random.rand(224, 224, 3)
-    
-    print("\nExtracting manual features...")
-    features = extractor.extract_all_features(dummy_image)
-    print(f"Feature vector size: {len(features)}")
-    
-    print("\nManual feature extraction ready!")
-
-
-if __name__ == "__main__":
-    test_feature_extraction()
-
-
 
