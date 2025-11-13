@@ -91,18 +91,18 @@ plant_disease_detection/
 After training, predict on any leaf image:
 
 ```bash
-# Using Keras model
+# Using PyTorch model
 python inference_demo.py \
     --image /path/to/your/leaf_photo.jpg \
-    --model-path models/deep_learning/mobilenet_v2_final.h5 \
-    --model-type keras \
+    --model-path models/deep_learning/mobilenet_v2_final.pth \
+    --model-type pytorch \
     --top-k 3
 
-# Or using TFLite (mobile-optimized)
+# Or using TorchScript (mobile-optimized)
 python inference_demo.py \
     --image /path/to/your/leaf_photo.jpg \
-    --model-path models/deployment/mobilenet_v2_quantized.tflite \
-    --model-type tflite \
+    --model-path models/deployment/mobilenet_v2_optimized.pt \
+    --model-type torchscript \
     --top-k 3
 ```
 
@@ -149,13 +149,13 @@ ls -lh models/deployment/
 ```bash
 pip install opencv-python pillow numpy scikit-learn scikit-image \
     matplotlib seaborn pyyaml tqdm joblib mahotas scipy \
-    albumentations tensorflow
+    albumentations torch torchvision
 ```
 
-**If GPU isn't detected (TensorFlow):**
+**If GPU isn't detected (PyTorch):**
 ```bash
 # It's fine! Training will use CPU (slower but works)
-# To use GPU: pip install tensorflow[and-cuda]
+# To use GPU: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 ```
 
 **If running out of memory:**

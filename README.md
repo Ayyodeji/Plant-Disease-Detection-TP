@@ -3,7 +3,7 @@
 A comprehensive, production-ready end-to-end system for detecting plant diseases using classical machine learning and deep learning approaches. Built with simplicity, portability, and local relevance in mind.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![TensorFlow 2.13+](https://img.shields.io/badge/tensorflow-2.13+-orange.svg)](https://www.tensorflow.org/)
+[![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0+-orange.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Table of Contents
@@ -62,7 +62,7 @@ This system implements a complete pipeline for plant disease detection, from dat
 - Cross-validation
 
 ### Deployment
-- TensorFlow Lite conversion with quantization
+- TorchScript and ONNX conversion for deployment
 - ONNX export
 - Inference pipeline for production use
 - Mobile-optimized models (<50MB)
@@ -180,8 +180,8 @@ Make predictions on a single image:
 ```bash
 python inference_demo.py \
     --image /path/to/plant/image.jpg \
-    --model-path models/deep_learning/mobilenet_v2_final.h5 \
-    --model-type keras \
+    --model-path models/deep_learning/mobilenet_v2_final.pth \
+    --model-type pytorch \
     --top-k 3
 ```
 
@@ -306,9 +306,9 @@ from src.deployment import InferencePipeline
 
 # Initialize pipeline
 pipeline = InferencePipeline(
-    model_path='models/deep_learning/mobilenet_v2_final.h5',
+    model_path='models/deep_learning/mobilenet_v2_final.pth',
     class_mapping_path='data/processed/class_mapping.json',
-    model_type='keras'
+    model_type='pytorch'
 )
 
 # Predict
@@ -337,7 +337,7 @@ Expected performance on PlantVillage dataset:
 
 ## Deployment
 
-### Mobile Deployment (TensorFlow Lite)
+### Mobile Deployment (PyTorch Mobile / ONNX)
 
 ```python
 from src.deployment import ModelConverter
@@ -359,7 +359,7 @@ tflite_path = converter.convert_to_tflite(
 ```python
 # Convert to ONNX
 onnx_path = converter.convert_to_onnx(
-    'models/deep_learning/mobilenet_v2_final.h5',
+    'models/deep_learning/mobilenet_v2_final.pth',
     'mobilenet_v2'
 )
 
@@ -378,7 +378,7 @@ result = pipeline.predict('image.jpg')
 
 **Command Line**:
 ```bash
-python inference_demo.py --image image.jpg --model-path model.h5
+python inference_demo.py --image image.jpg --model-path model.pth
 ```
 
 ## Ethical Considerations
@@ -447,7 +447,7 @@ This system implements techniques from:
 ## Acknowledgments
 
 - PlantVillage for the comprehensive plant disease dataset
-- TensorFlow and scikit-learn communities
+- PyTorch and scikit-learn communities
 - Agricultural extension officers who provided valuable feedback
 
 ## License

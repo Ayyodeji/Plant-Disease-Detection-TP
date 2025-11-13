@@ -119,8 +119,8 @@ This will:
 # Use trained model to identify disease
 python inference_demo.py \
     --image /path/to/leaf_photo.jpg \
-    --model-path models/deep_learning/mobilenet_v2_final.h5 \
-    --model-type keras \
+    --model-path models/deep_learning/mobilenet_v2_final.pth \
+    --model-type pytorch \
     --top-k 3
 ```
 
@@ -145,37 +145,44 @@ Top 3 Predictions:
 from src.deployment import ModelConverter
 
 converter = ModelConverter('config.yaml')
-tflite_path = converter.convert_to_tflite(
+
+# Convert to TorchScript for mobile deployment
+torchscript_path = converter.convert_to_torchscript(
     model, 
     'mobilenet_v2',
-    quantize=True  # Reduces size by 4x
+    optimize=True  # Optimizes for mobile
+)
+
+# Or convert to ONNX for cross-platform deployment
+onnx_path = converter.convert_to_onnx(
+    model,
+    'mobilenet_v2'
 )
 ```
 
 2. **Integrate with Mobile App**:
-- Use TensorFlow Lite for Android
-- Use Core ML for iOS
-- Model size: ~4MB (quantized)
+- Use PyTorch Mobile for Android/iOS
+- Use ONNX Runtime for cross-platform
+- Model size: ~4MB (optimized)
 - Inference time: <100ms on modern phones
 
-3. **Example Android Integration**:
+3. **Example Android Integration with PyTorch Mobile**:
 ```java
-// Load model
-Interpreter tflite = new Interpreter(loadModelFile());
+// Load TorchScript model
+Module module = LiteModuleLoader.load(assetFilePath(this, "model.pt"));
 
-// Preprocess image
-TensorImage inputImage = TensorImage.fromBitmap(bitmap);
-inputImage = preprocessor.process(inputImage);
+// Preprocess image (convert to tensor)
+Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(
+    bitmap,
+    TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
+    TensorImageUtils.TORCHVISION_NORM_STD_RGB
+);
 
 // Run inference
-TensorBuffer outputBuffer = TensorBuffer.createFixedSize(
-    new int[]{1, 38}, 
-    DataType.FLOAT32
-);
-tflite.run(inputImage.getBuffer(), outputBuffer.getBuffer());
+Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
 
 // Get results
-float[] probabilities = outputBuffer.getFloatArray();
+float[] probabilities = outputTensor.getDataAsFloatArray();
 ```
 
 ## Advanced Usage
@@ -253,9 +260,9 @@ import glob
 
 # Initialize pipeline
 pipeline = InferencePipeline(
-    model_path='models/deep_learning/mobilenet_v2_final.h5',
+    model_path='models/deep_learning/mobilenet_v2_final.pth',
     class_mapping_path='data/processed/class_mapping.json',
-    model_type='keras'
+    model_type='pytorch'
 )
 
 # Get all images in folder
@@ -345,7 +352,7 @@ evaluator.compare_models(results)
 1. **Use MobileNetV2** (smallest, still accurate)
 2. **Apply quantization**:
    ```python
-   converter.convert_to_tflite(model, 'mobilenet_v2', quantize=True)
+   converter.convert_to_torchscript(model, 'mobilenet_v2', optimize=True)
    ```
 3. **Reduce input size** in config.yaml:
    ```yaml
@@ -358,14 +365,18 @@ evaluator.compare_models(results)
 **Symptoms**: >5 seconds per image
 
 **Solutions**:
-1. **Use TFLite instead of full Keras model**
+1. **Use TorchScript instead of full PyTorch model**
 2. **Reduce image size**
 3. **Use GPU if available**:
    ```python
-   import tensorflow as tf
-   gpus = tf.config.list_physical_devices('GPU')
-   if gpus:
-       tf.config.set_visible_devices(gpus[0], 'GPU')
+   import torch
+   
+   # Check if GPU is available
+   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+   print(f"Using device: {device}")
+   
+   # Move model to GPU
+   model = model.to(device)
    ```
 
 ### Problem: Out of Memory During Training
@@ -406,7 +417,7 @@ evaluator.compare_models(results)
    - Document progression over time
 
 3. **Offline Mode**:
-   - Use TFLite models on mobile
+   - Use TorchScript or ONNX models on mobile
    - Pre-download models before field visit
    - Save results locally, sync later
 

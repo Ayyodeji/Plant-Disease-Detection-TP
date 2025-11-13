@@ -112,10 +112,10 @@ plant_disease_detection/
 │   │   ├── feature_scaler.pkl
 │   │   └── training_results.json
 │   ├── deep_learning/
-│   │   ├── mobilenet_v2_final.h5
-│   │   ├── mobilenet_v2_best.h5
-│   │   ├── resnet50_final.h5
-│   │   ├── efficientnet_b0_final.h5
+│   │   ├── mobilenet_v2_final.pth
+│   │   ├── mobilenet_v2_best.pth
+│   │   ├── resnet50_final.pth
+│   │   ├── efficientnet_b0_final.pth
 │   │   ├── *_history.json
 │   │   └── training_results.json
 │   └── deployment/
@@ -207,7 +207,7 @@ plant_disease_detection/
 - [x] Cross-validation results
 
 ### Deployment
-- [x] TensorFlow Lite conversion
+- [x] TorchScript and ONNX conversion
 - [x] ONNX export
 - [x] Quantization (FP16)
 - [x] Model size optimization (<10MB)
@@ -236,10 +236,9 @@ plant_disease_detection/
 ## Technologies Used
 
 ### Core ML/DL
-- **TensorFlow 2.13+**: Deep learning framework
-- **PyTorch 2.0+**: Alternative DL framework
+- **PyTorch 2.0+**: Deep learning framework
+- **TorchVision**: Pre-trained models and utilities
 - **scikit-learn 1.3+**: Classical ML algorithms
-- **Keras**: High-level neural network API
 
 ### Computer Vision
 - **OpenCV**: Image processing
@@ -260,7 +259,8 @@ plant_disease_detection/
 ### Deployment
 - **ONNX**: Model interoperability
 - **ONNX Runtime**: Fast inference
-- **TensorFlow Lite**: Mobile deployment
+- **PyTorch Mobile**: Mobile deployment
+- **ONNX**: Cross-platform model export
 
 ### Data Management
 - **Pandas**: Data manipulation
@@ -304,7 +304,7 @@ python main.py --step eval        # Evaluate models
 ```bash
 python inference_demo.py \
     --image leaf.jpg \
-    --model-path models/deep_learning/mobilenet_v2_final.h5
+    --model-path models/deep_learning/mobilenet_v2_final.pth
 ```
 
 ### Programmatic Use
@@ -312,9 +312,9 @@ python inference_demo.py \
 from src.deployment import InferencePipeline
 
 pipeline = InferencePipeline(
-    model_path='models/deep_learning/mobilenet_v2_final.h5',
+    model_path='models/deep_learning/mobilenet_v2_final.pth',
     class_mapping_path='data/processed/class_mapping.json',
-    model_type='keras'
+    model_type='pytorch'
 )
 
 result = pipeline.predict('image.jpg', top_k=3)

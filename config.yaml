@@ -9,8 +9,8 @@ data:
   val_split: 0.15
   test_split: 0.15
   random_seed: 42
-  max_classes: 5  # Limit to 5 classes to avoid memory issues
-  max_images_per_class: 500  # Limit images per class
+  max_classes: null  # Use all classes for full research dataset
+  max_images_per_class: null  # Use all images
 
 # Preprocessing Configuration
 preprocessing:
@@ -65,8 +65,8 @@ classical_ml:
 deep_learning:
   models:
     - "mobilenet_v2"
-    - "resnet50"
-    - "efficientnet_b0"
+    # - "resnet50"  # Commented out - requires internet to download weights
+    # - "efficientnet_b0"  # Commented out - requires internet to download weights
   batch_size: 32
   epochs: 50
   learning_rate: 0.001
@@ -85,7 +85,7 @@ evaluation:
   
 # Deployment Configuration
 deployment:
-  model_format: ["h5", "onnx", "tflite"]
+  model_format: ["torchscript", "onnx"]
   quantization: true
   target_device: "mobile"
   max_model_size_mb: 50

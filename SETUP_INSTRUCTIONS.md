@@ -228,8 +228,8 @@ plant_disease_detection/
 │   │   ├── random_forest.pkl
 │   │   ├── svm.pkl
 │   │   └── gradient_boosting.pkl
-│   └── deep_learning/          # Trained neural networks (.h5 files)
-│       ├── mobilenet_v2_final.h5
+│   └── deep_learning/          # Trained neural networks (.pth files)
+│       ├── mobilenet_v2_final.pth
 │       └── ...
 │
 ├── results/
@@ -273,8 +273,8 @@ Or for deep learning model:
 ```bash
 python inference_demo.py \
     --image /path/to/leaf_image.jpg \
-    --model-path models/deep_learning/mobilenet_v2_final.h5 \
-    --model-type keras
+    --model-path models/deep_learning/mobilenet_v2_final.pth \
+    --model-type pytorch
 ```
 
 ---

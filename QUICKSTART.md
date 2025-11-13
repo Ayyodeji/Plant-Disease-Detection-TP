@@ -119,8 +119,8 @@ Once training is complete:
 ```bash
 python inference_demo.py \
     --image test_images/tomato_leaf.jpg \
-    --model-path models/deep_learning/mobilenet_v2_final.h5 \
-    --model-type keras
+    --model-path models/deep_learning/mobilenet_v2_final.pth \
+    --model-type pytorch
 ```
 
 **Output:**
@@ -205,7 +205,7 @@ cat ~/.kaggle/kaggle.json
 **"CUDA not available"**
 ```bash
 # Normal! Training will use CPU (slower but works)
-# To use GPU, install: pip install tensorflow[and-cuda]
+# To use GPU with PyTorch, install: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 ```
 
 ## Getting Help
@@ -245,7 +245,7 @@ Subsequent runs are faster as data is cached!
 You'll know it's working when you see:
 
 1. `data/processed/X_train.npy` exists
-2. `models/deep_learning/mobilenet_v2_final.h5` created
+2. `models/deep_learning/mobilenet_v2_final.pth` created
 3. `results/model_comparison.csv` shows >95% accuracy
 4. `visualizations/` contains plots
 
