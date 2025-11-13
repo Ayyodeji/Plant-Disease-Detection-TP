@@ -344,10 +344,3 @@ def get_default_param_grids():
         }
     }
 
-
-if __name__ == "__main__":
-    print("Classical ML Trainer module initialized")
-    print("This module should be imported and used in the main training pipeline")
-
-
-

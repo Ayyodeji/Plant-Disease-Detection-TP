@@ -284,26 +284,3 @@ class ImagePreprocessor:
         
         return np.array(images)
 
-
-def test_preprocessing():
-    """Test preprocessing pipeline."""
-    print("Testing preprocessing pipeline...")
-    
-    preprocessor = ImagePreprocessor()
-    
-    # Test with a sample image (you'll need to update this path)
-    # This is just for demonstration
-    print("\nPreprocessing configuration:")
-    print(f"  Target size: {preprocessor.target_size}")
-    print(f"  Normalize: {preprocessor.normalize}")
-    print(f"  Mean: {preprocessor.mean}")
-    print(f"  Std: {preprocessor.std}")
-    
-    print("\nPreprocessing pipeline ready!")
-
-
-if __name__ == "__main__":
-    test_preprocessing()
-
-
-

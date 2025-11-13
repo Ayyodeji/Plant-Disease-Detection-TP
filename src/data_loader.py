@@ -239,35 +239,3 @@ class DatasetLoader:
         
         return class_to_idx
 
-
-def main():
-    """Main execution for dataset preparation."""
-    print("=" * 70)
-    print("PLANT DISEASE DETECTION - DATA PREPARATION")
-    print("=" * 70)
-    
-    loader = DatasetLoader()
-    
-    # Download dataset
-    dataset_path = loader.download_dataset()
-    
-    # Organize dataset
-    dataset_dict = loader.organize_dataset(dataset_path)
-    
-    # Create splits
-    train_dict, val_dict, test_dict = loader.create_splits(dataset_dict)
-    
-    # Save split information
-    loader.save_split_info(train_dict, val_dict, test_dict)
-    
-    # Create and save class mapping
-    class_mapping = loader.get_class_mapping(dataset_dict)
-    
-    print("\n" + "=" * 70)
-    print("DATA PREPARATION COMPLETE")
-    print("=" * 70)
-
-
-if __name__ == "__main__":
-    main()
-

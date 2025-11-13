@@ -299,22 +299,3 @@ class CutMixAugmentor:
         return mixed_images, mixed_labels
 
 
-def test_augmentation():
-    """Test augmentation pipeline."""
-    print("Testing augmentation pipeline...")
-    
-    augmentor = DataAugmentor()
-    
-    print("\nAugmentation configuration:")
-    print(f"  Rotation range: {augmentor.aug_config['rotation_range']}")
-    print(f"  Horizontal flip: {augmentor.aug_config['horizontal_flip']}")
-    print(f"  Zoom range: {augmentor.aug_config['zoom_range']}")
-    
-    print("\nAugmentation pipelines ready!")
-    print(f"  Training transforms: {len(augmentor.train_transform.transforms)} operations")
-    print(f"  Validation transforms: {len(augmentor.val_transform.transforms)} operations")
-
-
-if __name__ == "__main__":
-    test_augmentation()
-

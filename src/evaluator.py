@@ -421,10 +421,3 @@ class ModelEvaluator:
         else:
             return obj
 
-
-if __name__ == "__main__":
-    print("Model Evaluator module initialized")
-    print("This module should be imported and used after model training")
-
-
-
