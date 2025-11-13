@@ -238,11 +238,35 @@ class PlantDiseaseDetectionPipeline:
         
         # Evaluate deep learning models
         print("\n--- Deep Learning Models ---")
+        import torch
+        from torch.utils.data import DataLoader, TensorDataset
+        
         for model_name in dl_trainer.models.keys():
             print(f"\nEvaluating {model_name}...")
             model = dl_trainer.models[model_name]
+            model.eval()
             
-            y_pred_proba = model.predict(X_test, verbose=0)
+            # Convert test data to PyTorch format
+            X_test_torch = X_test.copy()
+            if X_test_torch.shape[-1] == 3:  # Convert from HWC to CHW
+                X_test_torch = np.transpose(X_test_torch, (0, 3, 1, 2))
+            
+            test_dataset = TensorDataset(
+                torch.from_numpy(X_test_torch).float(),
+                torch.from_numpy(y_test).long()
+            )
+            test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+            
+            # Get predictions
+            all_preds = []
+            with torch.no_grad():
+                for batch_X, _ in test_loader:
+                    batch_X = batch_X.to(dl_trainer.device)
+                    outputs = model(batch_X)
+                    probs = torch.softmax(outputs, dim=1)
+                    all_preds.append(probs.cpu().numpy())
+            
+            y_pred_proba = np.vstack(all_preds)
             y_pred = np.argmax(y_pred_proba, axis=1)
             
             results = self.evaluator.evaluate_model(
@@ -268,25 +292,30 @@ class PlantDiseaseDetectionPipeline:
         for model_name in dl_trainer.models.keys():
             model = dl_trainer.models[model_name]
             
-            # Convert to TFLite
-            if 'tflite' in self.config['deployment']['model_format']:
-                print(f"\nConverting {model_name} to TFLite...")
-                converter.convert_to_tflite(model, model_name, quantize=True)
+            # Convert to TorchScript
+            if 'torchscript' in self.config['deployment']['model_format']:
+                try:
+                    print(f"\nConverting {model_name} to TorchScript...")
+                    converter.convert_to_torchscript(model, model_name, optimize=True)
+                except Exception as e:
+                    print(f"Warning: Failed to convert {model_name} to TorchScript: {e}")
             
-            # Convert to ONNX (if tf2onnx is available)
+            # Convert to ONNX
             if 'onnx' in self.config['deployment']['model_format']:
-                model_path = Path(self.config['output']['models_dir']) / 'deep_learning' / f'{model_name}_final.h5'
-                if model_path.exists():
-                    converter.convert_to_onnx(str(model_path), model_name)
+                try:
+                    print(f"\nConverting {model_name} to ONNX...")
+                    converter.convert_to_onnx(model, model_name)
+                except Exception as e:
+                    print(f"Warning: Failed to convert {model_name} to ONNX: {e}")
         
         print("\nDeployment conversion complete")
     
-    def run_full_pipeline(self, skip_deep_learning=True):
+    def run_full_pipeline(self, skip_deep_learning=False):
         """Run the complete pipeline."""
         print("\n" + "=" * 80)
         print("STARTING FULL PIPELINE")
         if skip_deep_learning:
-            print("(Skipping deep learning due to TensorFlow compatibility issues)")
+            print("(Skipping deep learning)")
         print("=" * 80)
         
         # Check if data is already prepared
@@ -347,7 +376,6 @@ class PlantDiseaseDetectionPipeline:
             print("\n" + "=" * 80)
             print("SKIPPING DEEP LEARNING TRAINING")
             print("=" * 80)
-            print("Deep learning skipped due to TensorFlow compatibility issues.")
             print("Classical ML models have been trained successfully!")
             dl_trainer = None
         
@@ -483,7 +511,7 @@ def main():
         for model_name in pipeline.config['classical_ml']['models']:
             classical_trainer.load_model(model_name)
         for model_name in pipeline.config['deep_learning']['models']:
-            dl_trainer.load_model(model_name)
+            dl_trainer.load_model(model_name, num_classes=len(class_names))
         
         pipeline.step6_evaluate_models(
             classical_trainer, dl_trainer, features_test, X_test, y_test, class_names
@@ -492,8 +520,15 @@ def main():
         print(f"Running step: {args.step}")
         from deep_learning_trainer import DeepLearningTrainer
         dl_trainer = DeepLearningTrainer(args.config)
+        
+        # Load class mapping to get num_classes
+        processed_dir = Path(pipeline.config['data']['processed_data_dir'])
+        with open(processed_dir / 'class_mapping.json', 'r') as f:
+            class_mapping = json.load(f)
+        num_classes = len(class_mapping)
+        
         for model_name in pipeline.config['deep_learning']['models']:
-            dl_trainer.load_model(model_name)
+            dl_trainer.load_model(model_name, num_classes)
         pipeline.step7_convert_for_deployment(dl_trainer)
     else:
         print(f"Unknown step: {args.step}")

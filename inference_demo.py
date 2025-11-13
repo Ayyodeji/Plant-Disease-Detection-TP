@@ -34,8 +34,8 @@ def main():
     parser.add_argument(
         '--model-type',
         type=str,
-        choices=['keras', 'tflite', 'onnx', 'sklearn'],
-        default='keras',
+        choices=['pytorch', 'torchscript', 'onnx', 'sklearn'],
+        default='pytorch',
         help='Type of model'
     )
     parser.add_argument(
