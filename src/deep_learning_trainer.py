@@ -407,11 +407,15 @@ class DeepLearningTrainer:
         train_dataset = PlantDiseaseDataset(X_train, y_train)
         val_dataset = PlantDiseaseDataset(X_val, y_val)
         
+        # Windows requires num_workers=0 for DataLoader
+        import platform
+        num_workers = 0 if platform.system() == 'Windows' else 2
+        
         train_loader = DataLoader(
             train_dataset,
             batch_size=self.dl_config['batch_size'],
             shuffle=True,
-            num_workers=2,
+            num_workers=num_workers,
             pin_memory=True if torch.cuda.is_available() else False
         )
         
@@ -419,7 +423,7 @@ class DeepLearningTrainer:
             val_dataset,
             batch_size=self.dl_config['batch_size'],
             shuffle=False,
-            num_workers=2,
+            num_workers=num_workers,
             pin_memory=True if torch.cuda.is_available() else False
         )
         
